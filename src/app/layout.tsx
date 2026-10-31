@@ -1,6 +1,7 @@
 
 import type { Metadata } from "next";
 import "./globals.css";
+import Navbar from "../components/layout/Navbar";
 
 export const metadata: Metadata = {
   title: "StudioSpace",
@@ -14,7 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="min-h-screen bg-white text-gray-900 antialiased">
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }
