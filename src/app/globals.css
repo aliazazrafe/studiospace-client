@@ -16,3 +16,21 @@ body {
   color: #0f172a;
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.hero-swiper .swiper-pagination {
+  bottom: 15px !important;
+}
+
+.hero-swiper .swiper-pagination-bullet {
+  width: 9px;
+  height: 9px;
+  background: #f97316;
+  opacity: 0.35;
+  transition: all 0.3s ease;
+}
+
+.hero-swiper .swiper-pagination-bullet-active {
+  width: 25px;
+  border-radius: 20px;
+  opacity: 1;
+}
