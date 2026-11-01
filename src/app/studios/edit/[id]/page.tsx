@@ -4,6 +4,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type Studio = {
   id: number;
@@ -118,15 +119,27 @@ export default function EditStudioPage() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setMessage("");
+
+    if (!title.trim() || !location.trim() || !description.trim()) {
+      const error = "Please fill in all required fields.";
+      setMessage(error);
+      toast.error(error);
+      return;
+    }
 
     if (Number(price) <= 0 || !Number.isFinite(Number(price))) {
-      setMessage("Please enter a valid hourly price.");
+      const error = "Please enter a valid hourly price.";
+      setMessage(error);
+      toast.error(error);
       return;
     }
 
     setMessage(
       "Your changes are ready. Backend connection is coming next."
     );
+
+    toast.info("Studio updates are not connected to the backend yet.");
   };
 
   return (
@@ -165,11 +178,15 @@ export default function EditStudioPage() {
 
             {/* Studio Title */}
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-sm font-semibold">
+              <label
+                htmlFor="title"
+                className="mb-2 block text-sm font-semibold"
+              >
                 Studio Name *
               </label>
 
               <input
+                id="title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -181,13 +198,18 @@ export default function EditStudioPage() {
 
             {/* Category */}
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label
+                htmlFor="category"
+                className="mb-2 block text-sm font-semibold"
+              >
                 Category *
               </label>
 
               <select
+                id="category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
+                required
                 className={inputClass}
               >
                 {categories.map((item) => (
@@ -200,11 +222,15 @@ export default function EditStudioPage() {
 
             {/* Location */}
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label
+                htmlFor="location"
+                className="mb-2 block text-sm font-semibold"
+              >
                 Location *
               </label>
 
               <input
+                id="location"
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
@@ -216,11 +242,15 @@ export default function EditStudioPage() {
 
             {/* Price */}
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label
+                htmlFor="price"
+                className="mb-2 block text-sm font-semibold"
+              >
                 Price per Hour (৳) *
               </label>
 
               <input
+                id="price"
                 type="number"
                 min="1"
                 value={price}
@@ -233,11 +263,15 @@ export default function EditStudioPage() {
 
             {/* Status */}
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label
+                htmlFor="status"
+                className="mb-2 block text-sm font-semibold"
+              >
                 Listing Status
               </label>
 
               <select
+                id="status"
                 value={status}
                 onChange={(e) =>
                   setStatus(e.target.value as "Active" | "Pending")
@@ -251,11 +285,15 @@ export default function EditStudioPage() {
 
             {/* Image URL */}
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-sm font-semibold">
+              <label
+                htmlFor="image"
+                className="mb-2 block text-sm font-semibold"
+              >
                 Studio Image URL *
               </label>
 
               <input
+                id="image"
                 type="url"
                 value={image}
                 onChange={(e) => setImage(e.target.value)}
@@ -283,14 +321,19 @@ export default function EditStudioPage() {
 
             {/* Description */}
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-sm font-semibold">
+              <label
+                htmlFor="description"
+                className="mb-2 block text-sm font-semibold"
+              >
                 Studio Description *
               </label>
 
               <textarea
+                id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
+                minLength={20}
                 rows={5}
                 placeholder="Describe your studio and its facilities..."
                 className={`${inputClass} resize-y`}

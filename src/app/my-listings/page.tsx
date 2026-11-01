@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 type Studio = {
   id: number;
@@ -61,14 +62,32 @@ export default function MyListingsPage() {
       ? studios
       : studios.filter((studio) => studio.status === filter);
 
+  const selectedStudio = studios.find(
+    (studio) => studio.id === deleteId
+  );
+
   const handleDelete = () => {
     if (deleteId === null) return;
+
+    const studioToDelete = studios.find(
+      (studio) => studio.id === deleteId
+    );
+
+    if (!studioToDelete) {
+      toast.error("Studio listing not found.");
+      setDeleteId(null);
+      return;
+    }
 
     setStudios((prev) =>
       prev.filter((studio) => studio.id !== deleteId)
     );
 
     setDeleteId(null);
+
+    toast.success(
+      `${studioToDelete.title} removed from your listings.`
+    );
   };
 
   return (
@@ -240,32 +259,46 @@ export default function MyListingsPage() {
           /* Empty State */
           <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-10 text-center sm:py-14">
             <h3 className="text-lg font-bold">
-              No listings found
+              {studios.length === 0
+                ? "No studio listings yet"
+                : "No listings found"}
             </h3>
 
             <p className="mt-2 text-sm text-gray-500">
-              Add a studio to get started.
+              {studios.length === 0
+                ? "Add your first studio to get started."
+                : "Try selecting another filter."}
             </p>
 
-            <Link
-              href="/add-studio"
-              className="mt-5 inline-block rounded-lg bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
-            >
-              Add Studio
-            </Link>
+            {studios.length === 0 && (
+              <Link
+                href="/add-studio"
+                className="mt-5 inline-block rounded-lg bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+              >
+                Add Studio
+              </Link>
+            )}
           </div>
         )}
       </div>
 
       {/* Delete Confirmation Modal */}
       {deleteId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-5">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-5"
+          onClick={() => setDeleteId(null)}
+        >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="delete-title"
             className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl sm:p-6"
+            onClick={(e) => e.stopPropagation()}
           >
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-xl text-red-600">
+              !
+            </div>
+
             <h2
               id="delete-title"
               className="text-lg font-bold sm:text-xl"
@@ -274,8 +307,11 @@ export default function MyListingsPage() {
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-gray-500">
-              Are you sure you want to delete this studio?
-              This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-gray-800">
+                {selectedStudio?.title}
+              </span>
+              ? This action cannot be undone.
             </p>
 
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

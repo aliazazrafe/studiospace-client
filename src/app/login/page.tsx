@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,7 +15,14 @@ export default function LoginPage() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (!email.trim() || !password.trim()) {
+      toast.error("Please enter your email and password.");
+      return;
+    }
+
     setMessage("Login functionality will be connected with the backend soon.");
+
+    toast.info("Login is not connected to the backend yet.");
   };
 
   return (

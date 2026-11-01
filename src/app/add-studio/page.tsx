@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const categories = [
   "Photo Studios",
@@ -60,6 +61,8 @@ export default function AddStudioPage() {
     setMessage(
       "Your studio information is ready! Backend connection is coming next."
     );
+
+    toast.info("Studio listing is not connected to the backend yet.");
   };
 
   const inputClass =
@@ -108,11 +111,15 @@ export default function AddStudioPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
 
               <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-semibold">
+                <label
+                  htmlFor="title"
+                  className="mb-2 block text-sm font-semibold"
+                >
                   Studio Name *
                 </label>
 
                 <input
+                  id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
@@ -123,11 +130,15 @@ export default function AddStudioPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold">
+                <label
+                  htmlFor="category"
+                  className="mb-2 block text-sm font-semibold"
+                >
                   Category *
                 </label>
 
                 <select
+                  id="category"
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
@@ -145,11 +156,15 @@ export default function AddStudioPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold">
+                <label
+                  htmlFor="location"
+                  className="mb-2 block text-sm font-semibold"
+                >
                   Location *
                 </label>
 
                 <input
+                  id="location"
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
@@ -171,11 +186,15 @@ export default function AddStudioPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
               <div>
-                <label className="mb-2 block text-sm font-semibold">
+                <label
+                  htmlFor="price"
+                  className="mb-2 block text-sm font-semibold"
+                >
                   Price Per Hour (৳) *
                 </label>
 
                 <input
+                  id="price"
                   type="number"
                   name="price"
                   value={formData.price}
@@ -188,11 +207,15 @@ export default function AddStudioPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold">
+                <label
+                  htmlFor="capacity"
+                  className="mb-2 block text-sm font-semibold"
+                >
                   Maximum Capacity *
                 </label>
 
                 <input
+                  id="capacity"
                   type="number"
                   name="capacity"
                   value={formData.capacity}
@@ -214,11 +237,15 @@ export default function AddStudioPage() {
               Studio Description
             </h2>
 
-            <label className="mb-2 block text-sm font-semibold">
+            <label
+              htmlFor="description"
+              className="mb-2 block text-sm font-semibold"
+            >
               Tell us about your studio *
             </label>
 
             <textarea
+              id="description"
               name="description"
               value={formData.description}
               onChange={handleChange}

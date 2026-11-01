@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,25 +18,34 @@ export default function RegisterPage() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setMessage("");
 
     if (password.length < 6) {
-      setMessage("Password must be at least 6 characters long.");
+      const error = "Password must be at least 6 characters long.";
+      setMessage(error);
+      toast.error(error);
       return;
     }
 
     if (password !== confirmPassword) {
-      setMessage("Passwords do not match. Please try again.");
+      const error = "Passwords do not match. Please try again.";
+      setMessage(error);
+      toast.error(error);
       return;
     }
 
     if (!agreeTerms) {
-      setMessage("Please agree to the Terms and Conditions.");
+      const error = "Please agree to the Terms and Conditions.";
+      setMessage(error);
+      toast.warning(error);
       return;
     }
 
     setMessage(
       "Registration form submitted! Backend connection is coming next."
     );
+
+    toast.info("Registration is not connected to the backend yet.");
   };
 
   return (

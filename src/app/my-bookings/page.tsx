@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 type Booking = {
   id: number;
@@ -81,13 +82,11 @@ export default function MyBookingsPage() {
       const matchesFilter =
         filter === "All" || booking.status === filter;
 
+      const searchText = search.toLowerCase();
+
       const matchesSearch =
-        booking.studioName
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        booking.location
-          .toLowerCase()
-          .includes(search.toLowerCase());
+        booking.studioName.toLowerCase().includes(searchText) ||
+        booking.location.toLowerCase().includes(searchText);
 
       return matchesFilter && matchesSearch;
     });
@@ -108,15 +107,32 @@ export default function MyBookingsPage() {
   const handleCancel = () => {
     if (cancelId === null) return;
 
+    const bookingToCancel = bookings.find(
+      (booking) => booking.id === cancelId
+    );
+
+    if (!bookingToCancel) return;
+
+    const updatedBooking = {
+      ...bookingToCancel,
+      status: "Cancelled" as const,
+    };
+
     setBookings((previous) =>
       previous.map((booking) =>
-        booking.id === cancelId
-          ? { ...booking, status: "Cancelled" }
-          : booking
+        booking.id === cancelId ? updatedBooking : booking
       )
     );
 
+    if (selectedBooking?.id === cancelId) {
+      setSelectedBooking(updatedBooking);
+    }
+
     setCancelId(null);
+
+    toast.success("Booking cancelled in this demo view.", {
+      description: "The booking status has been changed to Cancelled. Database updates are not connected yet.",
+    });
   };
 
   const statusStyle = (status: Booking["status"]) => {
@@ -141,8 +157,6 @@ export default function MyBookingsPage() {
   return (
     <main className="min-h-screen bg-gray-50 px-3 py-6 text-gray-900 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-7xl">
-
-        {/* Back to Home */}
         <Link
           href="/"
           className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition hover:text-black"
@@ -150,7 +164,6 @@ export default function MyBookingsPage() {
           <span>←</span> Back to Home
         </Link>
 
-        {/* Header */}
         <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
@@ -215,6 +228,7 @@ export default function MyBookingsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search studio or location..."
+              aria-label="Search bookings"
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 lg:max-w-sm"
             />
 
@@ -222,6 +236,7 @@ export default function MyBookingsPage() {
               {filters.map((item) => (
                 <button
                   key={item}
+                  type="button"
                   onClick={() => setFilter(item)}
                   className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition sm:text-sm ${
                     filter === item
@@ -245,9 +260,7 @@ export default function MyBookingsPage() {
                 className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
               >
                 <div className="flex flex-col sm:flex-row">
-
-                  {/* Studio Image */}
-                  <div className="relative h-48 w-full shrink-0 sm:h-auto sm:min-h-64 sm:w-56 lg:w-64">
+                  <div className="relative h-48 w-full shrink-0 sm:min-h-64 sm:w-56 lg:w-64">
                     <img
                       src={booking.image}
                       alt={booking.studioName}
@@ -255,7 +268,6 @@ export default function MyBookingsPage() {
                     />
                   </div>
 
-                  {/* Booking Information */}
                   <div className="min-w-0 flex-1 p-4 sm:p-5">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -279,42 +291,32 @@ export default function MyBookingsPage() {
                       📍 {booking.location}
                     </p>
 
-                    {/* Booking Details */}
                     <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
                       <div>
-                        <p className="text-xs text-gray-400">
-                          Booking Date
-                        </p>
+                        <p className="text-xs text-gray-400">Booking Date</p>
                         <p className="mt-1 font-semibold">
                           {formatDate(booking.date)}
                         </p>
                       </div>
 
                       <div>
-                        <p className="text-xs text-gray-400">
-                          Booking Time
-                        </p>
+                        <p className="text-xs text-gray-400">Booking Time</p>
                         <p className="mt-1 font-semibold">
                           {booking.time}
                         </p>
                       </div>
 
                       <div>
-                        <p className="text-xs text-gray-400">
-                          Duration
-                        </p>
+                        <p className="text-xs text-gray-400">Duration</p>
                         <p className="mt-1 font-semibold">
                           {booking.duration} Hours
                         </p>
                       </div>
                     </div>
 
-                    {/* Price and Actions */}
                     <div className="mt-4 flex flex-col justify-between gap-4 border-t border-gray-100 pt-4 sm:flex-row sm:items-center">
                       <div>
-                        <p className="text-xs text-gray-400">
-                          Total Price
-                        </p>
+                        <p className="text-xs text-gray-400">Total Price</p>
                         <p className="mt-1 text-xl font-bold">
                           ৳{booking.price.toLocaleString("en-BD")}
                         </p>
@@ -322,6 +324,7 @@ export default function MyBookingsPage() {
 
                       <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                         <button
+                          type="button"
                           onClick={() => setSelectedBooking(booking)}
                           className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-gray-100 sm:w-auto"
                         >
@@ -330,6 +333,7 @@ export default function MyBookingsPage() {
 
                         {booking.status !== "Cancelled" && (
                           <button
+                            type="button"
                             onClick={() => setCancelId(booking.id)}
                             className="w-full rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 sm:w-auto"
                           >
@@ -346,9 +350,7 @@ export default function MyBookingsPage() {
             <div className="rounded-xl border border-dashed border-gray-300 bg-white px-5 py-12 text-center">
               <div className="mb-3 text-4xl">📅</div>
 
-              <h3 className="text-lg font-bold">
-                No bookings found
-              </h3>
+              <h3 className="text-lg font-bold">No bookings found</h3>
 
               <p className="mt-2 text-sm text-gray-500">
                 Try another search or explore studios to make a booking.
@@ -372,6 +374,9 @@ export default function MyBookingsPage() {
           onClick={() => setSelectedBooking(null)}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="booking-details-title"
             className="my-auto max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-4 shadow-xl sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
@@ -381,12 +386,16 @@ export default function MyBookingsPage() {
                   Booking Details
                 </p>
 
-                <h2 className="mt-1 break-words text-lg font-bold sm:text-xl">
+                <h2
+                  id="booking-details-title"
+                  className="mt-1 break-words text-lg font-bold sm:text-xl"
+                >
                   {selectedBooking.studioName}
                 </h2>
               </div>
 
               <button
+                type="button"
                 onClick={() => setSelectedBooking(null)}
                 className="shrink-0 rounded-lg px-3 py-1 text-xl text-gray-500 transition hover:bg-gray-100"
                 aria-label="Close booking details"
@@ -408,9 +417,7 @@ export default function MyBookingsPage() {
             <div className="mt-5 space-y-3 rounded-xl bg-gray-50 p-3 text-sm sm:p-4">
               <div className="flex justify-between gap-3">
                 <span className="text-gray-500">Booking ID</span>
-                <span className="font-semibold">
-                  #{selectedBooking.id}
-                </span>
+                <span className="font-semibold">#{selectedBooking.id}</span>
               </div>
 
               <div className="flex justify-between gap-3">
@@ -461,6 +468,7 @@ export default function MyBookingsPage() {
             </div>
 
             <button
+              type="button"
               onClick={() => setSelectedBooking(null)}
               className="mt-5 w-full rounded-lg bg-gray-900 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
             >
@@ -477,10 +485,13 @@ export default function MyBookingsPage() {
           onClick={() => setCancelId(null)}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cancel-booking-title"
             className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold">
+            <h2 id="cancel-booking-title" className="text-lg font-bold">
               Cancel this booking?
             </h2>
 
@@ -491,6 +502,7 @@ export default function MyBookingsPage() {
 
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
               <button
+                type="button"
                 onClick={() => setCancelId(null)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-gray-100 sm:w-auto"
               >
@@ -498,6 +510,7 @@ export default function MyBookingsPage() {
               </button>
 
               <button
+                type="button"
                 onClick={handleCancel}
                 className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 sm:w-auto"
               >
