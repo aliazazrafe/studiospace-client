@@ -17,8 +17,12 @@ export default function ContactPage() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!form.name.trim() || !form.email.trim() ||
-        !form.subject.trim() || !form.message.trim()) {
+    if (
+      !form.name.trim() ||
+      !form.email.trim() ||
+      !form.subject.trim() ||
+      !form.message.trim()
+    ) {
       return;
     }
 
@@ -77,20 +81,20 @@ export default function ContactPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-white text-gray-900">
+    <main className="min-h-screen overflow-hidden bg-white text-gray-900">
 
       {/* Hero Section */}
-      <section className="bg-gray-950 px-5 py-20 text-center text-white sm:px-8">
+      <section className="bg-gray-950 px-4 py-14 text-center text-white sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-gray-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 sm:text-sm sm:tracking-[0.25em]">
             Get In Touch
           </p>
 
-          <h1 className="mt-4 text-4xl font-bold sm:text-5xl">
+          <h1 className="mt-4 text-3xl font-bold sm:text-4xl md:text-5xl">
             Contact Us
           </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-gray-300">
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-gray-300 sm:mt-5 sm:text-base sm:leading-8">
             Have a question, suggestion or need help? We would love to
             hear from you. Get in touch with the StudioSpace team.
           </p>
@@ -98,28 +102,28 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Information */}
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        <div className="mb-12 text-center">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="mb-8 text-center sm:mb-12">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 sm:text-sm sm:tracking-[0.2em]">
             Contact Information
           </p>
 
-          <h2 className="mt-3 text-3xl font-bold">
+          <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
             We'd Love to Hear From You
           </h2>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
           {contactInfo.map((item) => (
             <div
               key={item.title}
-              className="rounded-2xl border border-gray-200 bg-white p-7 text-center transition hover:-translate-y-1 hover:shadow-lg"
+              className="rounded-2xl border border-gray-200 bg-white p-5 text-center transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-7"
             >
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-2xl">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-2xl sm:h-14 sm:w-14">
                 {item.icon}
               </div>
 
-              <h3 className="mt-5 text-lg font-bold">
+              <h3 className="mt-4 text-base font-bold sm:mt-5 sm:text-lg">
                 {item.title}
               </h3>
 
@@ -135,36 +139,38 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Contact Form */}
-      <section className="bg-gray-50 px-5 py-20 sm:px-8">
-        <div className="mx-auto grid max-w-7xl gap-12 md:grid-cols-2">
+      {/* Contact Form Section */}
+      <section className="bg-gray-50 px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 md:grid-cols-2 md:gap-10 lg:gap-12">
 
           {/* Left Content */}
           <div className="flex flex-col justify-center">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 sm:text-sm sm:tracking-[0.2em]">
               Send a Message
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
+            <h2 className="mt-3 text-2xl font-bold sm:text-3xl lg:text-4xl">
               Let's Start a Conversation
             </h2>
 
-            <p className="mt-6 leading-8 text-gray-600">
+            <p className="mt-4 text-sm leading-7 text-gray-600 sm:mt-6 sm:text-base sm:leading-8">
               Whether you are a creator looking for a studio or a studio
               owner wanting to list your space, our team is here to help.
               Send us a message and let us know how we can assist you.
             </p>
 
-            <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6">
+            <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 sm:mt-8 sm:p-6">
               <h3 className="font-bold">Our Support Hours</h3>
 
               <div className="mt-4 space-y-3 text-sm">
-                <div className="flex justify-between gap-3">
-                  <span className="text-gray-500">Saturday - Thursday</span>
+                <div className="flex flex-col justify-between gap-1 min-[400px]:flex-row min-[400px]:gap-3">
+                  <span className="text-gray-500">
+                    Saturday - Thursday
+                  </span>
                   <span className="font-semibold">9 AM - 6 PM</span>
                 </div>
 
-                <div className="flex justify-between gap-3">
+                <div className="flex flex-col justify-between gap-1 min-[400px]:flex-row min-[400px]:gap-3">
                   <span className="text-gray-500">Friday</span>
                   <span className="font-semibold">Closed</span>
                 </div>
@@ -172,9 +178,9 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Form */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-            <h3 className="text-2xl font-bold">
+          {/* Contact Form */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7 md:p-8">
+            <h3 className="text-xl font-bold sm:text-2xl">
               Send Us a Message
             </h3>
 
@@ -183,12 +189,15 @@ export default function ContactPage() {
             </p>
 
             {submitted && (
-              <div className="mt-5 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+              <div
+                role="status"
+                className="mt-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700 sm:p-4"
+              >
                 Thank you! Your message has been received in this demo.
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+            <form onSubmit={handleSubmit} className="mt-5 space-y-4 sm:mt-6 sm:space-y-5">
               <div>
                 <label className="mb-2 block text-sm font-semibold">
                   Full Name
@@ -202,7 +211,7 @@ export default function ContactPage() {
                     setForm({ ...form, name: e.target.value })
                   }
                   placeholder="Enter your full name"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
                 />
               </div>
 
@@ -219,7 +228,7 @@ export default function ContactPage() {
                     setForm({ ...form, email: e.target.value })
                   }
                   placeholder="example@email.com"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
                 />
               </div>
 
@@ -234,7 +243,7 @@ export default function ContactPage() {
                   onChange={(e) =>
                     setForm({ ...form, subject: e.target.value })
                   }
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none focus:border-gray-900"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
                 >
                   <option value="">Select a subject</option>
                   <option value="Booking Support">Booking Support</option>
@@ -258,13 +267,13 @@ export default function ContactPage() {
                     setForm({ ...form, message: e.target.value })
                   }
                   placeholder="Write your message here..."
-                  className="w-full resize-y rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900"
+                  className="w-full resize-y rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full rounded-lg bg-gray-900 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-700"
+                className="w-full rounded-lg bg-gray-900 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-700 active:scale-[0.99]"
               >
                 Send Message →
               </button>
@@ -274,32 +283,32 @@ export default function ContactPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="mx-auto max-w-4xl px-5 py-20 sm:px-8">
-        <div className="mb-10 text-center">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
+      <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+        <div className="mb-8 text-center sm:mb-10">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 sm:text-sm sm:tracking-[0.2em]">
             Help Center
           </p>
 
-          <h2 className="mt-3 text-3xl font-bold">
+          <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
             Frequently Asked Questions
           </h2>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {faqs.map((faq) => (
             <details
               key={faq.question}
-              className="group rounded-xl border border-gray-200 bg-white p-5"
+              className="group rounded-xl border border-gray-200 bg-white p-4 sm:p-5"
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
-                {faq.question}
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold sm:text-base">
+                <span>{faq.question}</span>
 
-                <span className="text-xl text-gray-500 transition group-open:rotate-45">
+                <span className="shrink-0 text-xl text-gray-500 transition group-open:rotate-45">
                   +
                 </span>
               </summary>
 
-              <p className="mt-4 text-sm leading-7 text-gray-600">
+              <p className="mt-3 text-sm leading-7 text-gray-600 sm:mt-4">
                 {faq.answer}
               </p>
             </details>
@@ -308,24 +317,23 @@ export default function ContactPage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="bg-gray-950 px-5 py-16 text-center text-white sm:px-8">
-        <h2 className="text-3xl font-bold">
+      <section className="bg-gray-950 px-4 py-12 text-center text-white sm:px-6 sm:py-16 lg:px-8">
+        <h2 className="text-2xl font-bold sm:text-3xl">
           Ready to Explore StudioSpace?
         </h2>
 
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-gray-400">
+        <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-gray-400 sm:text-base">
           Find the perfect creative space for your next project.
           Start exploring today.
         </p>
 
         <Link
           href="/studios"
-          className="mt-7 inline-flex rounded-lg bg-white px-7 py-3.5 text-sm font-semibold text-gray-950 transition hover:bg-gray-200"
+          className="mt-6 inline-flex w-full max-w-xs items-center justify-center rounded-lg bg-white px-7 py-3.5 text-sm font-semibold text-gray-950 transition hover:bg-gray-200 sm:mt-7 sm:w-auto"
         >
           Explore Studios →
         </Link>
       </section>
-
     </main>
   );
 }

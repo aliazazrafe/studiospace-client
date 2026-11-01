@@ -87,68 +87,85 @@ export default function StudiosPage() {
         selectedCategory === "All Studios" ||
         studio.category === selectedCategory;
 
-      const searchText = search.toLowerCase();
+      const searchText = search.toLowerCase().trim();
 
       const matchesSearch =
         studio.title.toLowerCase().includes(searchText) ||
-        studio.location.toLowerCase().includes(searchText);
+        studio.location.toLowerCase().includes(searchText) ||
+        studio.category.toLowerCase().includes(searchText);
 
       return matchesCategory && matchesSearch;
     });
   }, [search, selectedCategory]);
 
   return (
-    <main className="min-h-screen bg-[#faf9f6]">
-      {/* Main Container */}
-      <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+    <main className="min-h-screen w-full overflow-x-hidden bg-[#faf9f6]">
+      <section className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
 
-        {/* Page Heading */}
-        <div className="mb-8 text-center">
-          <p className="mb-2 text-xs font-bold uppercase tracking-[2.5px] text-orange-500">
+        {/* PAGE HEADING */}
+        <div className="mb-7 text-center sm:mb-9">
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-[2px] text-orange-500 sm:text-xs sm:tracking-[2.5px]">
             Discover Your Space
           </p>
 
-          <h1 className="text-3xl font-bold text-gray-900 md:text-4xl">
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">
             Explore Creative Studios
           </h1>
 
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-600">
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
             Discover inspiring spaces for photography, music,
             podcasting and your next creative project.
           </p>
         </div>
 
-        {/* Search */}
-        <div className="mx-auto mb-7 max-w-xl">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search studio name or location..."
-            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-          />
+        {/* SEARCH */}
+        <div className="mx-auto mb-6 w-full max-w-xl sm:mb-7">
+          <div className="flex items-center rounded-xl border border-gray-200 bg-white px-3 shadow-sm transition focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 sm:rounded-full sm:px-4">
+            <span className="text-lg text-gray-400">⌕</span>
+
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search studio name or location..."
+              className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-gray-800 outline-none placeholder:text-gray-400 sm:py-3.5"
+            />
+
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="shrink-0 px-2 text-sm font-semibold text-gray-400 hover:text-orange-500"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Category Filter */}
-        <div className="mb-8 flex flex-wrap justify-center gap-2">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`rounded-full px-4 py-2 text-xs font-semibold transition sm:text-sm ${
-                selectedCategory === category
-                  ? "bg-orange-500 text-white shadow-sm"
-                  : "border border-gray-200 bg-white text-gray-700 hover:border-orange-400 hover:text-orange-500"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
+        {/* CATEGORY FILTER */}
+        <div className="mb-7 sm:mb-8">
+          <div className="flex gap-2 overflow-x-auto pb-3 sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-semibold transition sm:px-5 sm:py-2.5 sm:text-sm ${
+                  selectedCategory === category
+                    ? "bg-orange-500 text-white shadow-sm"
+                    : "border border-gray-200 bg-white text-gray-700 hover:border-orange-400 hover:text-orange-500"
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Results Count */}
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">
+        {/* RESULTS COUNT */}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-bold text-gray-900 sm:text-lg">
             Available Studios
           </h2>
 
@@ -157,16 +174,16 @@ export default function StudiosPage() {
           </p>
         </div>
 
-        {/* Studio Cards */}
+        {/* STUDIO CARDS */}
         {filteredStudios.length > 0 ? (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
             {filteredStudios.map((studio) => (
               <article
                 key={studio.id}
-                className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                className="group min-w-0 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
               >
-                {/* Image */}
-                <div className="relative h-48 overflow-hidden bg-gray-100 sm:h-52">
+                {/* IMAGE */}
+                <div className="relative h-52 overflow-hidden bg-gray-100 sm:h-48 md:h-52">
                   <img
                     src={studio.image}
                     alt={studio.title}
@@ -174,15 +191,15 @@ export default function StudiosPage() {
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   />
 
-                  <span className="absolute left-3 top-3 rounded-full bg-white px-2.5 py-1.5 text-[10px] font-semibold text-orange-600 shadow">
+                  <span className="absolute left-3 top-3 max-w-[85%] truncate rounded-full bg-white px-3 py-1.5 text-[10px] font-semibold text-orange-600 shadow sm:text-xs">
                     {studio.category}
                   </span>
                 </div>
 
-                {/* Card Content */}
-                <div className="p-4">
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="truncate text-xs text-gray-500 sm:text-sm">
+                {/* CARD CONTENT */}
+                <div className="p-4 sm:p-4 md:p-5">
+                  <div className="mb-2 flex min-w-0 items-center justify-between gap-2">
+                    <span className="min-w-0 truncate text-xs text-gray-500 sm:text-sm">
                       📍 {studio.location}
                     </span>
 
@@ -191,23 +208,23 @@ export default function StudiosPage() {
                     </span>
                   </div>
 
-                  <h3 className="mb-3 line-clamp-1 text-base font-bold text-gray-900">
+                  <h3 className="mb-3 line-clamp-1 text-base font-bold text-gray-900 sm:text-lg">
                     {studio.title}
                   </h3>
 
-                  <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                    <p className="text-base font-bold text-orange-600">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+                    <p className="text-base font-bold text-orange-600 sm:text-lg">
                       ৳{studio.price}
-                      <span className="text-xs font-normal text-gray-500">
+                      <span className="text-xs font-normal text-gray-500 sm:text-sm">
                         /hour
                       </span>
                     </p>
 
                     <Link
                       href={`/studios/${studio.id}`}
-                      className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-orange-500 sm:px-4 sm:text-sm"
+                      className="rounded-lg bg-gray-900 px-3 py-2.5 text-xs font-semibold text-white transition hover:bg-orange-500 sm:px-4 sm:text-sm"
                     >
-                      View Details
+                      View Details →
                     </Link>
                   </div>
                 </div>
@@ -215,12 +232,15 @@ export default function StudiosPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-xl bg-white px-5 py-14 text-center">
-            <h2 className="text-xl font-bold text-gray-900">
+          /* EMPTY STATE */
+          <div className="rounded-xl bg-white px-4 py-12 text-center shadow-sm sm:px-5 sm:py-14">
+            <div className="mb-3 text-4xl">🔍</div>
+
+            <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
               No Studios Found
             </h2>
 
-            <p className="mt-3 text-sm text-gray-500">
+            <p className="mt-2 text-sm leading-6 text-gray-500">
               Try searching with another name or category.
             </p>
 
@@ -229,7 +249,7 @@ export default function StudiosPage() {
                 setSearch("");
                 setSelectedCategory("All Studios");
               }}
-              className="mt-5 rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+              className="mt-5 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
             >
               Clear Filters
             </button>

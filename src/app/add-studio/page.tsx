@@ -57,71 +57,85 @@ export default function AddStudioPage() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setMessage("Your studio information is ready! Backend connection is coming next.");
+    setMessage(
+      "Your studio information is ready! Backend connection is coming next."
+    );
   };
 
+  const inputClass =
+    "w-full min-w-0 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100";
+
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-12 text-gray-900">
-      <div className="mx-auto max-w-4xl">
+    <main className="min-h-screen w-full overflow-x-hidden bg-gray-50 px-4 py-7 text-gray-900 sm:px-6 sm:py-10">
+      <div className="mx-auto w-full max-w-4xl">
+
+        {/* BACK BUTTON */}
         <Link
           href="/studios"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-gray-600 transition hover:text-black"
+          className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-gray-600 transition hover:text-orange-500 sm:mb-6"
         >
           ← Back to Studios
         </Link>
 
-        <div className="mb-10">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">
+        {/* PAGE HEADER */}
+        <div className="mb-7 sm:mb-9">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[2px] text-orange-500 sm:text-sm sm:tracking-[0.2em]">
             Become a Host
           </p>
 
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">
             List Your Creative Studio
           </h1>
 
-          <p className="mt-3 max-w-2xl text-gray-500">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500 sm:text-base sm:leading-7">
             Share your creative space with photographers, artists,
             musicians and creators.
           </p>
         </div>
 
+        {/* FORM */}
         <form
           onSubmit={handleSubmit}
-          className="space-y-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8"
+          className="space-y-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:space-y-8 sm:p-6 md:p-8"
         >
-          {/* Basic Information */}
+
+          {/* BASIC INFORMATION */}
           <section>
-            <h2 className="mb-5 text-xl font-semibold">
+            <h2 className="mb-4 text-lg font-bold text-gray-900 sm:mb-5 sm:text-xl">
               Basic Information
             </h2>
 
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+
               <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium">
+                <label className="mb-2 block text-sm font-semibold">
                   Studio Name *
                 </label>
+
                 <input
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
                   required
                   placeholder="e.g. Professional Photography Studio"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className={inputClass}
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">
+                <label className="mb-2 block text-sm font-semibold">
                   Category *
                 </label>
+
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
+                  className={inputClass}
                 >
                   <option value="">Select category</option>
+
                   {categories.map((category) => (
                     <option key={category} value={category}>
                       {category}
@@ -131,16 +145,17 @@ export default function AddStudioPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">
+                <label className="mb-2 block text-sm font-semibold">
                   Location *
                 </label>
+
                 <input
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
                   required
                   placeholder="e.g. Dhanmondi, Dhaka"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
             </div>
@@ -148,17 +163,18 @@ export default function AddStudioPage() {
 
           <div className="h-px bg-gray-100" />
 
-          {/* Pricing and Capacity */}
+          {/* PRICING AND CAPACITY */}
           <section>
-            <h2 className="mb-5 text-xl font-semibold">
+            <h2 className="mb-4 text-lg font-bold text-gray-900 sm:mb-5 sm:text-xl">
               Pricing & Capacity
             </h2>
 
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
               <div>
-                <label className="mb-2 block text-sm font-medium">
+                <label className="mb-2 block text-sm font-semibold">
                   Price Per Hour (৳) *
                 </label>
+
                 <input
                   type="number"
                   name="price"
@@ -167,14 +183,15 @@ export default function AddStudioPage() {
                   required
                   min="1"
                   placeholder="e.g. 1500"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">
+                <label className="mb-2 block text-sm font-semibold">
                   Maximum Capacity *
                 </label>
+
                 <input
                   type="number"
                   name="capacity"
@@ -183,7 +200,7 @@ export default function AddStudioPage() {
                   required
                   min="1"
                   placeholder="e.g. 10 people"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
             </div>
@@ -191,13 +208,13 @@ export default function AddStudioPage() {
 
           <div className="h-px bg-gray-100" />
 
-          {/* Description */}
+          {/* DESCRIPTION */}
           <section>
-            <h2 className="mb-5 text-xl font-semibold">
+            <h2 className="mb-4 text-lg font-bold text-gray-900 sm:mb-5 sm:text-xl">
               Studio Description
             </h2>
 
-            <label className="mb-2 block text-sm font-medium">
+            <label className="mb-2 block text-sm font-semibold">
               Tell us about your studio *
             </label>
 
@@ -209,39 +226,40 @@ export default function AddStudioPage() {
               rows={5}
               minLength={20}
               placeholder="Describe your studio, facilities, equipment and what makes it special..."
-              className="w-full resize-y rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-indigo-500"
+              className={`${inputClass} resize-y`}
             />
           </section>
 
           <div className="h-px bg-gray-100" />
 
-          {/* Amenities */}
+          {/* AMENITIES */}
           <section>
-            <h2 className="mb-2 text-xl font-semibold">
+            <h2 className="mb-2 text-lg font-bold text-gray-900 sm:text-xl">
               Studio Amenities
             </h2>
 
-            <p className="mb-5 text-sm text-gray-500">
+            <p className="mb-4 text-xs leading-5 text-gray-500 sm:mb-5 sm:text-sm">
               Select everything available in your studio.
             </p>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:grid-cols-3 sm:gap-3">
               {availableAmenities.map((amenity) => (
                 <label
                   key={amenity}
-                  className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm transition ${
+                  className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border p-3 text-xs font-medium transition sm:text-sm ${
                     selectedAmenities.includes(amenity)
-                      ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                      : "border-gray-200 hover:border-gray-400"
+                      ? "border-orange-500 bg-orange-50 text-orange-700"
+                      : "border-gray-200 text-gray-700 hover:border-orange-300"
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={selectedAmenities.includes(amenity)}
                     onChange={() => toggleAmenity(amenity)}
-                    className="accent-indigo-600"
+                    className="h-4 w-4 shrink-0 accent-orange-500"
                   />
-                  {amenity}
+
+                  <span>{amenity}</span>
                 </label>
               ))}
             </div>
@@ -249,13 +267,13 @@ export default function AddStudioPage() {
 
           <div className="h-px bg-gray-100" />
 
-          {/* Image */}
+          {/* IMAGE */}
           <section>
-            <h2 className="mb-2 text-xl font-semibold">
+            <h2 className="mb-2 text-lg font-bold text-gray-900 sm:text-xl">
               Studio Image
             </h2>
 
-            <p className="mb-5 text-sm text-gray-500">
+            <p className="mb-4 text-xs leading-5 text-gray-500 sm:mb-5 sm:text-sm">
               Add a public image URL of your studio.
             </p>
 
@@ -264,7 +282,7 @@ export default function AddStudioPage() {
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               placeholder="https://example.com/studio-image.jpg"
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-indigo-500"
+              className={inputClass}
             />
 
             {imageUrl && (
@@ -272,36 +290,40 @@ export default function AddStudioPage() {
                 <img
                   src={imageUrl}
                   alt="Studio preview"
-                  className="h-56 w-full object-cover"
+                  className="h-48 w-full object-cover sm:h-64"
                   onError={(e) => {
                     e.currentTarget.style.display = "none";
+                  }}
+                  onLoad={(e) => {
+                    e.currentTarget.style.display = "block";
                   }}
                 />
               </div>
             )}
           </section>
 
+          {/* SUCCESS MESSAGE */}
           {message && (
             <p
               role="status"
-              className="rounded-xl bg-green-50 p-4 text-sm text-green-700"
+              className="rounded-xl bg-green-50 p-3 text-sm leading-6 text-green-700 sm:p-4"
             >
               {message}
             </p>
           )}
 
-          {/* Submit */}
-          <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:justify-end">
+          {/* SUBMIT BUTTONS */}
+          <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:justify-end sm:pt-6">
             <Link
               href="/studios"
-              className="rounded-xl border border-gray-300 px-6 py-3 text-center font-medium transition hover:bg-gray-50"
+              className="rounded-xl border border-gray-300 px-6 py-3 text-center text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
             >
               Cancel
             </Link>
 
             <button
               type="submit"
-              className="rounded-xl bg-indigo-600 px-7 py-3 font-semibold text-white transition hover:bg-indigo-700"
+              className="rounded-xl bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-600 sm:px-7"
             >
               Create Studio Listing →
             </button>

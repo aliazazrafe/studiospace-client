@@ -164,133 +164,166 @@ export default async function StudioDetailsPage({ params }: Props) {
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <Link
-        href="/studios"
-        className="mb-6 inline-block text-sm font-medium text-gray-600 hover:text-black"
-      >
-        ← Back to Studios
-      </Link>
+    <main className="min-h-screen w-full overflow-x-hidden bg-white">
+      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
 
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">
-          {studio.name}
-        </h1>
+        {/* BACK BUTTON */}
+        <Link
+          href="/studios"
+          className="mb-5 inline-flex items-center text-sm font-semibold text-gray-600 transition hover:text-orange-500 sm:mb-6"
+        >
+          ← Back to Studios
+        </Link>
 
-        <div className="mt-2 flex flex-wrap gap-3 text-sm text-gray-600">
-          <span>📍 {studio.location}</span>
-          <span>⭐ {studio.rating} ({studio.reviews} reviews)</span>
-          <span>{studio.category}</span>
-        </div>
-      </div>
+        {/* STUDIO HEADING */}
+        <div className="mb-5 sm:mb-6">
+          <div className="mb-2 inline-block rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-600">
+            {studio.category}
+          </div>
 
-      {/* Image Gallery */}
-      <div className="grid grid-cols-1 gap-3 overflow-hidden rounded-2xl md:grid-cols-3">
-        <div className="relative h-72 md:col-span-2 md:h-[420px]">
-          <Image
-            src={studio.images[0]}
-            alt={studio.name}
-            fill
-            priority
-            unoptimized
-            className="object-cover"
-          />
+          <h1 className="text-2xl font-bold leading-tight text-gray-900 sm:text-3xl lg:text-4xl">
+            {studio.name}
+          </h1>
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-600 sm:text-sm">
+            <span>📍 {studio.location}</span>
+            <span className="font-medium text-gray-800">
+              ⭐ {studio.rating} ({studio.reviews} reviews)
+            </span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
-          {studio.images.slice(1).map((image, index) => (
-            <div
-              key={index}
-              className="relative h-48 md:h-[204px]"
-            >
-              <Image
-                src={image}
-                alt={`${studio.name} ${index + 2}`}
-                fill
-                unoptimized
-                className="object-cover"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+        {/* IMAGE GALLERY */}
+        <div className="grid grid-cols-1 gap-2 overflow-hidden rounded-2xl sm:gap-3 md:grid-cols-3">
+          {/* MAIN IMAGE */}
+          <div className="relative h-[250px] overflow-hidden rounded-xl bg-gray-100 sm:h-[350px] md:col-span-2 md:h-[420px] md:rounded-l-2xl md:rounded-r-none">
+            <Image
+              src={studio.images[0]}
+              alt={studio.name}
+              fill
+              priority
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 66vw"
+              className="object-cover transition duration-500 hover:scale-105"
+            />
+          </div>
 
-      {/* Studio Information */}
-      <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <h2 className="text-2xl font-bold text-gray-900">
-            About this studio
-          </h2>
-
-          <p className="mt-4 leading-7 text-gray-600">
-            {studio.description}
-          </p>
-
-          <div className="my-8 border-t border-gray-200" />
-
-          <h2 className="text-2xl font-bold text-gray-900">
-            What this studio offers
-          </h2>
-
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {studio.amenities.map((item) => (
-              <div key={item} className="text-gray-700">
-                ✓ {item}
+          {/* SECONDARY IMAGES */}
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-1">
+            {studio.images.slice(1).map((image, index) => (
+              <div
+                key={index}
+                className="relative h-32 overflow-hidden rounded-xl bg-gray-100 sm:h-44 md:h-[204px] md:rounded-l-none md:rounded-r-2xl"
+              >
+                <Image
+                  src={image}
+                  alt={`${studio.name} ${index + 2}`}
+                  fill
+                  unoptimized
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                  className="object-cover transition duration-500 hover:scale-105"
+                />
               </div>
             ))}
           </div>
-
-          <div className="my-8 border-t border-gray-200" />
-
-          <h2 className="text-2xl font-bold text-gray-900">
-            Hosted by
-          </h2>
-
-          <div className="mt-4 flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-200 text-xl">
-              👤
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-900">
-                StudioSpace Host
-              </h3>
-              <p className="text-sm text-gray-500">
-                Studio owner
-              </p>
-            </div>
-          </div>
         </div>
 
-        {/* Booking Card */}
-        <aside className="h-fit rounded-2xl border border-gray-200 p-6 shadow-lg">
-          <p className="text-2xl font-bold text-gray-900">
-            ৳{studio.price}
-            <span className="text-sm font-normal text-gray-500">
-              {" "} / hour
-            </span>
-          </p>
+        {/* MAIN CONTENT */}
+        <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:mt-10 lg:grid-cols-3 lg:gap-10">
 
-          <div className="mt-5 rounded-xl border border-gray-200 p-4">
-            <p className="text-sm font-semibold text-gray-800">
-              Booking information
-            </p>
-            <p className="mt-2 text-sm text-gray-500">
-              Choose your preferred date and time to book this studio.
-            </p>
+          {/* LEFT CONTENT */}
+          <div className="min-w-0 lg:col-span-2">
+
+            {/* ABOUT */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
+                About this studio
+              </h2>
+
+              <p className="mt-3 text-sm leading-7 text-gray-600 sm:mt-4 sm:text-base">
+                {studio.description}
+              </p>
+            </section>
+
+            <div className="my-6 border-t border-gray-200 sm:my-8" />
+
+            {/* AMENITIES */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
+                What this studio offers
+              </h2>
+
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+                {studio.amenities.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 text-sm text-gray-700 sm:text-base"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-50 text-sm font-bold text-orange-500">
+                      ✓
+                    </span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <div className="my-6 border-t border-gray-200 sm:my-8" />
+
+            {/* HOST */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
+                Hosted by
+              </h2>
+
+              <div className="mt-4 flex items-center gap-3 sm:gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-50 text-xl sm:h-14 sm:w-14">
+                  👤
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 sm:text-base">
+                    StudioSpace Host
+                  </h3>
+                  <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+                    Studio owner
+                  </p>
+                </div>
+              </div>
+            </section>
           </div>
 
-          <Link
-            href="/login"
-            className="mt-5 block w-full rounded-xl bg-gray-900 py-3 text-center font-semibold text-white transition hover:bg-orange-500"
-          >
-            Book This Studio
-          </Link>
+          {/* BOOKING CARD */}
+          <aside className="h-fit w-full rounded-2xl border border-gray-200 bg-white p-4 shadow-md sm:p-6 lg:sticky lg:top-28">
+            <p className="text-2xl font-bold text-gray-900 sm:text-3xl">
+              ৳{studio.price}
+              <span className="text-sm font-normal text-gray-500">
+                {" "}/ hour
+              </span>
+            </p>
 
-          <p className="mt-3 text-center text-xs text-gray-500">
-            Login required to continue booking.
-          </p>
-        </aside>
+            <div className="mt-4 rounded-xl border border-gray-200 p-3 sm:mt-5 sm:p-4">
+              <p className="text-sm font-semibold text-gray-800">
+                Booking information
+              </p>
+
+              <p className="mt-2 text-xs leading-6 text-gray-500 sm:text-sm">
+                Choose your preferred date and time to book this studio.
+              </p>
+            </div>
+
+            <Link
+              href="/login"
+              className="mt-4 block w-full rounded-xl bg-gray-900 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-500 sm:mt-5 sm:py-3.5"
+            >
+              Book This Studio →
+            </Link>
+
+            <p className="mt-3 text-center text-xs text-gray-500">
+              Login required to continue booking.
+            </p>
+          </aside>
+        </div>
       </div>
     </main>
   );

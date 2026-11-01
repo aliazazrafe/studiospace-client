@@ -1,6 +1,4 @@
 
-
-
 "use client";
 
 import { useState } from "react";
@@ -20,8 +18,8 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10 text-gray-900">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl md:grid-cols-2">
+    <main className="flex min-h-screen items-center justify-center bg-gray-50 px-3 py-6 text-gray-900 sm:px-5 sm:py-10">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg sm:rounded-2xl md:grid-cols-2">
 
         {/* Left Side - Image */}
         <div className="relative hidden min-h-[650px] md:block">
@@ -33,7 +31,7 @@ export default function LoginPage() {
 
           <div className="absolute inset-0 bg-black/60" />
 
-          <div className="relative z-10 flex h-full flex-col justify-between p-10 text-white">
+          <div className="relative z-10 flex h-full flex-col justify-between p-8 text-white lg:p-10">
             <Link href="/" className="text-2xl font-bold tracking-tight">
               StudioSpace<span className="text-gray-300">.</span>
             </Link>
@@ -43,7 +41,7 @@ export default function LoginPage() {
                 Create Something Amazing
               </p>
 
-              <h1 className="text-4xl font-bold leading-tight">
+              <h1 className="text-3xl font-bold leading-tight lg:text-4xl">
                 Find Your Space.
                 <br />
                 Create Your Story.
@@ -62,34 +60,36 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side - Login Form */}
-        <div className="flex items-center justify-center px-6 py-10 sm:px-10 md:px-12">
+        <div className="flex items-center justify-center px-4 py-8 sm:px-8 sm:py-10 md:px-8 lg:px-12">
           <div className="w-full max-w-md">
 
             {/* Mobile Logo */}
             <Link
               href="/"
-              className="mb-8 inline-block text-2xl font-bold tracking-tight md:hidden"
+              className="mb-7 inline-block text-2xl font-bold tracking-tight md:hidden"
             >
               StudioSpace<span className="text-gray-400">.</span>
             </Link>
 
+            {/* Back to Home */}
             <Link
               href="/"
-              className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition hover:text-black"
+              className="mb-7 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition hover:text-black"
             >
               ← Back to Home
             </Link>
 
-            <div className="mb-8">
-              <p className="text-sm font-semibold uppercase tracking-widest text-gray-500">
+            {/* Heading */}
+            <div className="mb-7 sm:mb-8">
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 sm:text-sm">
                 Welcome Back
               </p>
 
-              <h2 className="mt-2 text-3xl font-bold tracking-tight">
+              <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
                 Sign in to your account
               </h2>
 
-              <p className="mt-3 text-sm text-gray-500">
+              <p className="mt-3 text-sm leading-6 text-gray-500">
                 Enter your details to access your StudioSpace account.
               </p>
             </div>
@@ -118,7 +118,7 @@ export default function LoginPage() {
 
               {/* Password */}
               <div>
-                <div className="mb-2 flex items-center justify-between">
+                <div className="mb-2 flex items-center justify-between gap-2">
                   <label
                     htmlFor="password"
                     className="block text-sm font-semibold"
@@ -128,7 +128,7 @@ export default function LoginPage() {
 
                   <Link
                     href="/forgot-password"
-                    className="text-xs font-semibold text-gray-600 transition hover:text-black"
+                    className="shrink-0 text-xs font-semibold text-gray-600 transition hover:text-black sm:text-sm"
                   >
                     Forgot Password?
                   </Link>
@@ -175,7 +175,10 @@ export default function LoginPage() {
 
               {/* Message */}
               {message && (
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
+                <div
+                  role="status"
+                  className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm leading-6 text-gray-600"
+                >
                   {message}
                 </div>
               )}
@@ -183,14 +186,14 @@ export default function LoginPage() {
               {/* Login Button */}
               <button
                 type="submit"
-                className="w-full rounded-lg bg-gray-900 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+                className="w-full rounded-lg bg-gray-900 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
               >
                 Sign In
               </button>
             </form>
 
             {/* Register Link */}
-            <p className="mt-8 text-center text-sm text-gray-500">
+            <p className="mt-7 text-center text-sm text-gray-500 sm:mt-8">
               Don't have an account?{" "}
               <Link
                 href="/register"
@@ -200,8 +203,9 @@ export default function LoginPage() {
               </Link>
             </p>
 
-            <div className="mt-8 border-t border-gray-100 pt-5 text-center">
-              <p className="text-xs text-gray-400">
+            {/* Footer */}
+            <div className="mt-7 border-t border-gray-100 pt-5 text-center sm:mt-8">
+              <p className="text-xs leading-5 text-gray-400">
                 By signing in, you agree to our Terms of Service and Privacy
                 Policy.
               </p>
