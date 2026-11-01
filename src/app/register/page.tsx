@@ -15,10 +15,37 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
+
+    if (isLoading) return;
+
     setMessage("");
+
+    if (
+      !name.trim() ||
+      !email.trim() ||
+      !password ||
+      !confirmPassword
+    ) {
+      const error = "Please fill in all required fields.";
+      setMessage(error);
+      toast.error(error);
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email.trim())) {
+      const error = "Please enter a valid email address.";
+      setMessage(error);
+      toast.error(error);
+      return;
+    }
 
     if (password.length < 6) {
       const error = "Password must be at least 6 characters long.";
@@ -41,11 +68,30 @@ export default function RegisterPage() {
       return;
     }
 
-    setMessage(
-      "Registration form submitted! Backend connection is coming next."
-    );
+    setIsLoading(true);
 
-    toast.info("Registration is not connected to the backend yet.");
+    try {
+      // Temporary delay to demonstrate loading.
+      // Replace this with the registration API request later.
+      await new Promise<void>((resolve) =>
+        setTimeout(resolve, 1200)
+      );
+
+      setMessage(
+        "Registration is currently in demo mode. No account has been created."
+      );
+
+      toast.info("Registration is not connected to the backend yet.", {
+        description:
+          "Your account has not been created. Backend integration is coming soon.",
+      });
+    } catch {
+      const error = "Something went wrong. Please try again.";
+      setMessage(error);
+      toast.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,8 +109,12 @@ export default function RegisterPage() {
           <div className="absolute inset-0 bg-black/60" />
 
           <div className="relative z-10 flex h-full flex-col justify-between p-8 text-white lg:p-10">
-            <Link href="/" className="text-2xl font-bold tracking-tight">
-              StudioSpace<span className="text-gray-300">.</span>
+            <Link
+              href="/"
+              className="text-2xl font-bold tracking-tight"
+            >
+              StudioSpace
+              <span className="text-gray-300">.</span>
             </Link>
 
             <div>
@@ -79,8 +129,9 @@ export default function RegisterPage() {
               </h1>
 
               <p className="mt-5 max-w-sm text-sm leading-7 text-gray-200">
-                Join StudioSpace to discover amazing studios, connect with
-                creative people and turn your ideas into reality.
+                Join StudioSpace to discover amazing studios,
+                connect with creative people and turn your
+                ideas into reality.
               </p>
             </div>
 
@@ -99,7 +150,8 @@ export default function RegisterPage() {
               href="/"
               className="mb-6 inline-block text-2xl font-bold tracking-tight md:hidden"
             >
-              StudioSpace<span className="text-gray-400">.</span>
+              StudioSpace
+              <span className="text-gray-400">.</span>
             </Link>
 
             {/* Back Button */}
@@ -125,8 +177,11 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              className="space-y-4"
+            >
               {/* Full Name */}
               <div>
                 <label
@@ -140,11 +195,15 @@ export default function RegisterPage() {
                   id="name"
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setMessage("");
+                  }}
                   placeholder="Enter your full name"
                   required
+                  disabled={isLoading}
                   autoComplete="name"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 sm:px-4"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4"
                 />
               </div>
 
@@ -161,11 +220,15 @@ export default function RegisterPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setMessage("");
+                  }}
                   placeholder="you@example.com"
                   required
+                  disabled={isLoading}
                   autoComplete="email"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 sm:px-4"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4"
                 />
               </div>
 
@@ -183,17 +246,29 @@ export default function RegisterPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setMessage("");
+                    }}
                     placeholder="Create a password"
                     required
+                    disabled={isLoading}
                     autoComplete="new-password"
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 pr-16 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 sm:px-4"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 pr-16 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4"
                   />
 
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500 hover:text-black sm:right-4"
+                    onClick={() =>
+                      setShowPassword(!showPassword)
+                    }
+                    disabled={isLoading}
+                    aria-label={
+                      showPassword
+                        ? "Hide password"
+                        : "Show password"
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500 hover:text-black disabled:opacity-50 sm:right-4"
                   >
                     {showPassword ? "Hide" : "Show"}
                   </button>
@@ -216,23 +291,41 @@ export default function RegisterPage() {
                 <div className="relative">
                   <input
                     id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
+                    type={
+                      showConfirmPassword
+                        ? "text"
+                        : "password"
+                    }
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      setMessage("");
+                    }}
                     placeholder="Confirm your password"
                     required
+                    disabled={isLoading}
                     autoComplete="new-password"
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 pr-16 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 sm:px-4"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 pr-16 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4"
                   />
 
                   <button
                     type="button"
                     onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
+                      setShowConfirmPassword(
+                        !showConfirmPassword
+                      )
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500 hover:text-black sm:right-4"
+                    disabled={isLoading}
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500 hover:text-black disabled:opacity-50 sm:right-4"
                   >
-                    {showConfirmPassword ? "Hide" : "Show"}
+                    {showConfirmPassword
+                      ? "Hide"
+                      : "Show"}
                   </button>
                 </div>
               </div>
@@ -243,8 +336,12 @@ export default function RegisterPage() {
                   id="terms"
                   type="checkbox"
                   checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
-                  className="mt-1 h-4 w-4 shrink-0 accent-gray-900"
+                  onChange={(e) => {
+                    setAgreeTerms(e.target.checked);
+                    setMessage("");
+                  }}
+                  disabled={isLoading}
+                  className="mt-1 h-4 w-4 shrink-0 accent-gray-900 disabled:opacity-50"
                 />
 
                 <label
@@ -279,12 +376,24 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              {/* Create Account */}
+              {/* Create Account Button */}
               <button
                 type="submit"
-                className="w-full rounded-lg bg-gray-900 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 active:scale-[0.99]"
+                disabled={isLoading}
+                aria-busy={isLoading}
+                className="flex w-full items-center justify-center gap-3 rounded-lg bg-gray-900 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Create Account
+                {isLoading ? (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    />
+                    <span>Creating Account...</span>
+                  </>
+                ) : (
+                  "Create Account"
+                )}
               </button>
             </form>
 

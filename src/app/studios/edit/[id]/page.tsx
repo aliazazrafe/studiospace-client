@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -69,7 +69,8 @@ const categories = [
   "Other",
 ];
 
-export default function EditStudioPage() {
+// This component reads the dynamic route parameter.
+function EditStudioContent() {
   const params = useParams();
   const router = useRouter();
 
@@ -89,10 +90,93 @@ export default function EditStudioPage() {
   const [status, setStatus] = useState<"Active" | "Pending">(
     studio?.status ?? "Active"
   );
+
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const inputClass =
-    "w-full min-w-0 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-100";
+    "w-full min-w-0 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-100 disabled:cursor-not-allowed disabled:opacity-60";
+
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    if (isLoading || !studio) return;
+
+    setMessage("");
+
+    if (
+      !title.trim() ||
+      !category ||
+      !location.trim() ||
+      !price.trim() ||
+      !image.trim() ||
+      !description.trim()
+    ) {
+      const error = "Please fill in all required fields.";
+      setMessage(error);
+      toast.error(error);
+      return;
+    }
+
+    const hourlyPrice = Number(price);
+
+    if (!Number.isFinite(hourlyPrice) || hourlyPrice <= 0) {
+      const error = "Please enter a valid hourly price.";
+      setMessage(error);
+      toast.error(error);
+      return;
+    }
+
+    if (description.trim().length < 20) {
+      const error = "Description must be at least 20 characters long.";
+      setMessage(error);
+      toast.warning(error);
+      return;
+    }
+
+    try {
+      const url = new URL(image.trim());
+
+      if (!["http:", "https:"].includes(url.protocol)) {
+        throw new Error("Invalid URL protocol");
+      }
+    } catch {
+      const error = "Please enter a valid studio image URL.";
+      setMessage(error);
+      toast.error(error);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Temporary loading demonstration.
+      // Replace this delay with a real update API request later.
+      await new Promise<void>((resolve) =>
+        setTimeout(resolve, 1200)
+      );
+
+      setMessage(
+        "Studio update is in demo mode. No changes have been saved to the database."
+      );
+
+      toast.info(
+        "Studio updates are not connected to the backend yet.",
+        {
+          description:
+            "Your changes have not been saved. Backend integration is coming soon.",
+        }
+      );
+    } catch {
+      const error = "Something went wrong. Please try again.";
+      setMessage(error);
+      toast.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!studio) {
     return (
@@ -116,31 +200,6 @@ export default function EditStudioPage() {
       </main>
     );
   }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setMessage("");
-
-    if (!title.trim() || !location.trim() || !description.trim()) {
-      const error = "Please fill in all required fields.";
-      setMessage(error);
-      toast.error(error);
-      return;
-    }
-
-    if (Number(price) <= 0 || !Number.isFinite(Number(price))) {
-      const error = "Please enter a valid hourly price.";
-      setMessage(error);
-      toast.error(error);
-      return;
-    }
-
-    setMessage(
-      "Your changes are ready. Backend connection is coming next."
-    );
-
-    toast.info("Studio updates are not connected to the backend yet.");
-  };
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-gray-50 px-3 py-6 text-gray-900 sm:px-6 sm:py-8">
@@ -172,6 +231,7 @@ export default function EditStudioPage() {
         {/* Form */}
         <form
           onSubmit={handleSubmit}
+          noValidate
           className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 md:p-8"
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
@@ -189,7 +249,11 @@ export default function EditStudioPage() {
                 id="title"
                 type="text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  setMessage("");
+                }}
+                disabled={isLoading}
                 required
                 placeholder="Enter studio name"
                 className={inputClass}
@@ -208,7 +272,11 @@ export default function EditStudioPage() {
               <select
                 id="category"
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  setMessage("");
+                }}
+                disabled={isLoading}
                 required
                 className={inputClass}
               >
@@ -233,7 +301,11 @@ export default function EditStudioPage() {
                 id="location"
                 type="text"
                 value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                onChange={(e) => {
+                  setLocation(e.target.value);
+                  setMessage("");
+                }}
+                disabled={isLoading}
                 required
                 placeholder="e.g. Dhanmondi, Dhaka"
                 className={inputClass}
@@ -254,7 +326,11 @@ export default function EditStudioPage() {
                 type="number"
                 min="1"
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                onChange={(e) => {
+                  setPrice(e.target.value);
+                  setMessage("");
+                }}
+                disabled={isLoading}
                 required
                 placeholder="Enter hourly price"
                 className={inputClass}
@@ -273,9 +349,13 @@ export default function EditStudioPage() {
               <select
                 id="status"
                 value={status}
-                onChange={(e) =>
-                  setStatus(e.target.value as "Active" | "Pending")
-                }
+                onChange={(e) => {
+                  setStatus(
+                    e.target.value as "Active" | "Pending"
+                  );
+                  setMessage("");
+                }}
+                disabled={isLoading}
                 className={inputClass}
               >
                 <option value="Active">Active</option>
@@ -296,7 +376,11 @@ export default function EditStudioPage() {
                 id="image"
                 type="url"
                 value={image}
-                onChange={(e) => setImage(e.target.value)}
+                onChange={(e) => {
+                  setImage(e.target.value);
+                  setMessage("");
+                }}
+                disabled={isLoading}
                 required
                 placeholder="Paste your image URL"
                 className={inputClass}
@@ -331,7 +415,11 @@ export default function EditStudioPage() {
               <textarea
                 id="description"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  setMessage("");
+                }}
+                disabled={isLoading}
                 required
                 minLength={20}
                 rows={5}
@@ -341,7 +429,7 @@ export default function EditStudioPage() {
             </div>
           </div>
 
-          {/* Message */}
+          {/* Demo Message */}
           {message && (
             <div
               role="status"
@@ -356,20 +444,51 @@ export default function EditStudioPage() {
             <button
               type="button"
               onClick={() => router.push("/my-listings")}
-              className="rounded-lg border border-gray-300 px-5 py-3 text-sm font-semibold transition hover:bg-gray-100"
+              disabled={isLoading}
+              className="rounded-lg border border-gray-300 px-5 py-3 text-sm font-semibold transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+              disabled={isLoading}
+              aria-busy={isLoading}
+              className="flex items-center justify-center gap-3 rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Update Changes
+              {isLoading ? (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                  />
+                  <span>Updating Studio...</span>
+                </>
+              ) : (
+                "Update Changes"
+              )}
             </button>
           </div>
         </form>
       </div>
     </main>
+  );
+}
+
+// Suspense boundary for Next.js 16 useParams().
+export default function EditStudioPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-gray-50 px-4 py-8">
+          <div className="mx-auto max-w-4xl animate-pulse">
+            <div className="h-8 w-48 rounded bg-gray-200" />
+            <div className="mt-6 h-[480px] rounded-2xl bg-gray-200" />
+          </div>
+        </main>
+      }
+    >
+      <EditStudioContent />
+    </Suspense>
   );
 }

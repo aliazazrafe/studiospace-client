@@ -11,18 +11,51 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
+
+    if (isLoading) return;
+
+    setMessage("");
 
     if (!email.trim() || !password.trim()) {
       toast.error("Please enter your email and password.");
       return;
     }
 
-    setMessage("Login functionality will be connected with the backend soon.");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    toast.info("Login is not connected to the backend yet.");
+    if (!emailRegex.test(email.trim())) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Temporary demo delay.
+      // Replace this with the real login API request later.
+      await new Promise<void>((resolve) =>
+        setTimeout(resolve, 1200)
+      );
+
+      setMessage(
+        "Login is currently in demo mode. Backend authentication is not connected yet."
+      );
+
+      toast.info("Login is not connected to the backend yet.", {
+        description:
+          "Authentication will be available after backend integration.",
+      });
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -40,8 +73,12 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-black/60" />
 
           <div className="relative z-10 flex h-full flex-col justify-between p-8 text-white lg:p-10">
-            <Link href="/" className="text-2xl font-bold tracking-tight">
-              StudioSpace<span className="text-gray-300">.</span>
+            <Link
+              href="/"
+              className="text-2xl font-bold tracking-tight"
+            >
+              StudioSpace
+              <span className="text-gray-300">.</span>
             </Link>
 
             <div>
@@ -56,8 +93,8 @@ export default function LoginPage() {
               </h1>
 
               <p className="mt-5 max-w-sm text-sm leading-7 text-gray-200">
-                Discover inspiring creative spaces and bring your ideas to
-                life with StudioSpace.
+                Discover inspiring creative spaces and bring
+                your ideas to life with StudioSpace.
               </p>
             </div>
 
@@ -76,7 +113,8 @@ export default function LoginPage() {
               href="/"
               className="mb-7 inline-block text-2xl font-bold tracking-tight md:hidden"
             >
-              StudioSpace<span className="text-gray-400">.</span>
+              StudioSpace
+              <span className="text-gray-400">.</span>
             </Link>
 
             {/* Back to Home */}
@@ -98,12 +136,16 @@ export default function LoginPage() {
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-gray-500">
-                Enter your details to access your StudioSpace account.
+                Enter your details to access your StudioSpace
+                account.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              className="space-y-5"
+            >
               {/* Email */}
               <div>
                 <label
@@ -117,10 +159,15 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setMessage("");
+                  }}
                   placeholder="you@example.com"
                   required
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                  disabled={isLoading}
+                  autoComplete="email"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 disabled:cursor-not-allowed disabled:opacity-60"
                 />
               </div>
 
@@ -147,16 +194,29 @@ export default function LoginPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setMessage("");
+                    }}
                     placeholder="Enter your password"
                     required
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pr-16 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                    disabled={isLoading}
+                    autoComplete="current-password"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pr-16 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 disabled:cursor-not-allowed disabled:opacity-60"
                   />
 
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500 hover:text-black"
+                    onClick={() =>
+                      setShowPassword(!showPassword)
+                    }
+                    disabled={isLoading}
+                    aria-label={
+                      showPassword
+                        ? "Hide password"
+                        : "Show password"
+                    }
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500 hover:text-black disabled:opacity-50"
                   >
                     {showPassword ? "Hide" : "Show"}
                   </button>
@@ -169,8 +229,11 @@ export default function LoginPage() {
                   id="remember"
                   type="checkbox"
                   checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 accent-gray-900"
+                  onChange={(e) =>
+                    setRememberMe(e.target.checked)
+                  }
+                  disabled={isLoading}
+                  className="h-4 w-4 accent-gray-900 disabled:opacity-50"
                 />
 
                 <label
@@ -181,7 +244,7 @@ export default function LoginPage() {
                 </label>
               </div>
 
-              {/* Message */}
+              {/* Demo Message */}
               {message && (
                 <div
                   role="status"
@@ -194,15 +257,27 @@ export default function LoginPage() {
               {/* Login Button */}
               <button
                 type="submit"
-                className="w-full rounded-lg bg-gray-900 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                disabled={isLoading}
+                aria-busy={isLoading}
+                className="flex w-full items-center justify-center gap-3 rounded-lg bg-gray-900 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Sign In
+                {isLoading ? (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    />
+                    <span>Signing In...</span>
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </button>
             </form>
 
             {/* Register Link */}
             <p className="mt-7 text-center text-sm text-gray-500 sm:mt-8">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/register"
                 className="font-bold text-gray-900 transition hover:underline"
@@ -214,8 +289,8 @@ export default function LoginPage() {
             {/* Footer */}
             <div className="mt-7 border-t border-gray-100 pt-5 text-center sm:mt-8">
               <p className="text-xs leading-5 text-gray-400">
-                By signing in, you agree to our Terms of Service and Privacy
-                Policy.
+                By signing in, you agree to our Terms of
+                Service and Privacy Policy.
               </p>
             </div>
           </div>

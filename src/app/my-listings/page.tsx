@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -56,18 +56,23 @@ export default function MyListingsPage() {
   const [studios, setStudios] = useState<Studio[]>(initialStudios);
   const [filter, setFilter] = useState("All");
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const filteredStudios =
     filter === "All"
       ? studios
       : studios.filter((studio) => studio.status === filter);
 
-  const selectedStudio = studios.find(
-    (studio) => studio.id === deleteId
-  );
+  const selectedStudio =
+    studios.find((studio) => studio.id === deleteId) ?? null;
 
-  const handleDelete = () => {
-    if (deleteId === null) return;
+  const closeDeleteModal = () => {
+    if (isDeleting) return;
+    setDeleteId(null);
+  };
+
+  const handleDelete = async () => {
+    if (deleteId === null || isDeleting) return;
 
     const studioToDelete = studios.find(
       (studio) => studio.id === deleteId
@@ -79,16 +84,49 @@ export default function MyListingsPage() {
       return;
     }
 
-    setStudios((prev) =>
-      prev.filter((studio) => studio.id !== deleteId)
-    );
+    setIsDeleting(true);
 
-    setDeleteId(null);
+    try {
+      // Demo loading delay.
+      // Replace with a real backend API request later.
+      await new Promise<void>((resolve) =>
+        setTimeout(resolve, 1200)
+      );
 
-    toast.success(
-      `${studioToDelete.title} removed from your listings.`
-    );
+      setStudios((previous) =>
+        previous.filter(
+          (studio) => studio.id !== studioToDelete.id
+        )
+      );
+
+      setDeleteId(null);
+
+      toast.success("Studio removed from this demo view.", {
+        description:
+          "No database record was deleted. This change is temporary.",
+      });
+    } catch {
+      toast.error("Unable to delete studio. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
+
+  useEffect(() => {
+    if (deleteId === null) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !isDeleting) {
+        setDeleteId(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [deleteId, isDeleting]);
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-gray-50 px-3 py-5 text-gray-900 sm:px-6 sm:py-7">
@@ -144,7 +182,11 @@ export default function MyListingsPage() {
             </p>
 
             <h2 className="mt-2 text-xl font-bold text-green-600 sm:text-3xl">
-              {studios.filter((s) => s.status === "Active").length}
+              {
+                studios.filter(
+                  (studio) => studio.status === "Active"
+                ).length
+              }
             </h2>
           </div>
 
@@ -154,7 +196,11 @@ export default function MyListingsPage() {
             </p>
 
             <h2 className="mt-2 text-xl font-bold text-amber-600 sm:text-3xl">
-              {studios.filter((s) => s.status === "Pending").length}
+              {
+                studios.filter(
+                  (studio) => studio.status === "Pending"
+                ).length
+              }
             </h2>
           </div>
         </div>
@@ -166,6 +212,7 @@ export default function MyListingsPage() {
               key={item}
               type="button"
               onClick={() => setFilter(item)}
+              aria-pressed={filter === item}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                 filter === item
                   ? "bg-gray-900 text-white"
@@ -246,7 +293,8 @@ export default function MyListingsPage() {
                     <button
                       type="button"
                       onClick={() => setDeleteId(studio.id)}
-                      className="rounded-lg border border-red-200 px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                      disabled={isDeleting}
+                      className="rounded-lg border border-red-200 px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Delete
                     </button>
@@ -283,19 +331,22 @@ export default function MyListingsPage() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {deleteId !== null && (
+      {selectedStudio && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-5"
-          onClick={() => setDeleteId(null)}
+          onClick={closeDeleteModal}
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="delete-title"
+            aria-describedby="delete-description"
+            aria-busy={isDeleting}
             className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-xl text-red-600">
+            {/* Warning Icon */}
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-xl font-bold text-red-600">
               !
             </div>
 
@@ -306,29 +357,63 @@ export default function MyListingsPage() {
               Delete this listing?
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-gray-500">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-gray-800">
-                {selectedStudio?.title}
-              </span>
-              ? This action cannot be undone.
+            <p
+              id="delete-description"
+              className="mt-2 text-sm leading-6 text-gray-500"
+            >
+              Are you sure you want to remove this studio from
+              your listings?
             </p>
 
-            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            {/* Studio Summary */}
+            <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <p className="text-sm font-bold text-gray-900">
+                {selectedStudio.title}
+              </p>
+
+              <p className="mt-2 text-xs text-gray-500">
+                📍 {selectedStudio.location}
+              </p>
+
+              <p className="mt-2 text-sm font-semibold text-gray-900">
+                ৳{selectedStudio.price.toLocaleString("en-BD")} /hr
+              </p>
+            </div>
+
+            <p className="mt-3 text-xs leading-5 text-gray-500">
+              This is a frontend demo. No database record
+              will be deleted.
+            </p>
+
+            {/* Modal Buttons */}
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
               <button
                 type="button"
-                onClick={() => setDeleteId(null)}
-                className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-gray-100"
+                onClick={closeDeleteModal}
+                disabled={isDeleting}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
-                Cancel
+                Keep Studio
               </button>
 
               <button
                 type="button"
                 onClick={handleDelete}
-                className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+                disabled={isDeleting}
+                aria-busy={isDeleting}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
               >
-                Yes, Delete
+                {isDeleting ? (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  "Yes, Delete"
+                )}
               </button>
             </div>
           </div>

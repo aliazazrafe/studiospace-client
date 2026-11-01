@@ -1,7 +1,7 @@
 
-
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -53,6 +53,21 @@ const slides = [
 ];
 
 export default function HeroSlider() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent Swiper from rendering during server prerendering.
+  if (!mounted) {
+    return (
+      <main className="w-full overflow-hidden bg-white">
+        <div className="mx-auto h-[420px] w-full max-w-[1440px] animate-pulse rounded-2xl bg-gray-100 sm:h-[520px]" />
+      </main>
+    );
+  }
+
   return (
     <main className="w-full overflow-hidden bg-white">
       <Swiper
@@ -75,7 +90,10 @@ export default function HeroSlider() {
               {/* LEFT CONTENT */}
               <div className="w-full min-w-0">
                 <div className="inline-flex max-w-full items-center gap-2 rounded-full bg-orange-50 px-3 py-1.5">
-                  <span className="shrink-0 text-orange-500">✦</span>
+                  <span className="shrink-0 text-orange-500">
+                    ✦
+                  </span>
+
                   <span className="text-[11px] font-semibold text-orange-600 sm:text-xs">
                     {slide.badge}
                   </span>
@@ -83,6 +101,7 @@ export default function HeroSlider() {
 
                 <h1 className="mt-4 text-[30px] font-extrabold leading-[1.15] tracking-tight text-slate-950 sm:mt-5 sm:text-4xl md:text-[42px] lg:text-[46px]">
                   {slide.title}
+
                   <span className="block text-orange-500">
                     {slide.highlight}
                   </span>
@@ -135,42 +154,52 @@ export default function HeroSlider() {
 
                 {/* STATISTICS */}
                 <div className="mt-7 grid max-w-[560px] grid-cols-3 border-t border-gray-200 pt-5 sm:mt-8">
+
+                  {/* Creative Spaces */}
                   <div className="flex min-w-0 flex-col gap-1 border-r border-gray-200 pr-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:gap-2 sm:pr-3">
                     <span className="text-lg text-orange-500 sm:text-xl">
                       ▦
                     </span>
+
                     <div className="min-w-0">
                       <h3 className="text-base font-extrabold text-slate-950 sm:text-lg">
                         500+
                       </h3>
+
                       <p className="text-[10px] leading-4 text-slate-500 sm:text-xs">
                         Creative Spaces
                       </p>
                     </div>
                   </div>
 
+                  {/* Happy Creators */}
                   <div className="flex min-w-0 flex-col items-center gap-1 border-r border-gray-200 px-1 min-[420px]:flex-row min-[420px]:justify-center min-[420px]:gap-2 sm:px-2">
                     <span className="text-lg text-orange-500 sm:text-xl">
                       ♟
                     </span>
+
                     <div className="min-w-0">
                       <h3 className="text-base font-extrabold text-slate-950 sm:text-lg">
                         2k+
                       </h3>
+
                       <p className="text-[10px] leading-4 text-slate-500 sm:text-xs">
                         Happy Creators
                       </p>
                     </div>
                   </div>
 
+                  {/* User Rating */}
                   <div className="flex min-w-0 flex-col items-end gap-1 pl-2 min-[420px]:flex-row min-[420px]:justify-end min-[420px]:gap-2 sm:pl-3">
                     <span className="text-lg text-orange-500 sm:text-xl">
                       ★
                     </span>
+
                     <div className="min-w-0">
                       <h3 className="text-base font-extrabold text-slate-950 sm:text-lg">
                         4.9
                       </h3>
+
                       <p className="text-[10px] leading-4 text-slate-500 sm:text-xs">
                         User Rating
                       </p>
@@ -198,6 +227,8 @@ export default function HeroSlider() {
 
                   {/* FLOATING CARD */}
                   <div className="absolute bottom-3 left-3 right-3 flex min-w-0 items-center gap-2 rounded-xl bg-white/95 p-2.5 shadow-lg backdrop-blur-sm sm:bottom-5 sm:left-5 sm:right-5 sm:gap-3 sm:p-3">
+
+                    {/* Floating Image */}
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full sm:h-12 sm:w-12">
                       <Image
                         src={slide.floatingImage}
@@ -208,22 +239,28 @@ export default function HeroSlider() {
                       />
                     </div>
 
+                    {/* Studio Info */}
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate text-xs font-bold text-slate-950 sm:text-sm">
                         {slide.studio}
                       </h3>
+
                       <p className="mt-1 truncate text-[10px] text-slate-500 sm:text-xs">
                         📍 {slide.location}
                       </p>
                     </div>
 
+                    {/* Rating */}
                     <div className="shrink-0 text-xs font-bold text-slate-900 sm:text-sm">
-                      <span className="text-orange-500">★</span>{" "}
+                      <span className="text-orange-500">
+                        ★
+                      </span>{" "}
                       {slide.rating}
                     </div>
                   </div>
                 </div>
               </div>
+
             </section>
           </SwiperSlide>
         ))}

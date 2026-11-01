@@ -1,4 +1,7 @@
 
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const quickLinks = [
@@ -14,11 +17,22 @@ const hostLinks = [
   { name: "My Bookings", href: "/my-bookings" },
 ];
 
+function CopyrightYear() {
+  const [year, setYear] = useState(2026);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
+  return <>{year}</>;
+}
+
 export default function Footer() {
   return (
     <footer className="bg-gray-950 text-gray-300">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
 
+        {/* Footer Grid */}
         <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-4 sm:gap-7">
 
           {/* Brand */}
@@ -35,6 +49,7 @@ export default function Footer() {
               Discover, book, and create with StudioSpace.
             </p>
 
+            {/* Social Links */}
             <div className="mt-3 flex gap-2">
               <a
                 href="https://facebook.com"
@@ -118,6 +133,7 @@ export default function Footer() {
               <p className="break-all">
                 ✉ support@studiospace.com
               </p>
+
               <p>⌖ Dhaka, Bangladesh</p>
             </div>
 
@@ -130,24 +146,31 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom */}
+        {/* Footer Bottom */}
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-gray-800 pt-5 text-center sm:flex-row sm:text-left">
 
+          {/* Copyright */}
           <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} StudioSpace. All rights reserved.
+            © <CopyrightYear /> StudioSpace. All rights reserved.
           </p>
 
+          {/* Legal Links */}
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-gray-500">
-            <Link href="/privacy" className="transition hover:text-white">
+            <Link
+              href="/privacy"
+              className="transition hover:text-white"
+            >
               Privacy Policy
             </Link>
 
-            <Link href="/terms" className="transition hover:text-white">
+            <Link
+              href="/terms"
+              className="transition hover:text-white"
+            >
               Terms & Conditions
             </Link>
           </div>
         </div>
-
       </div>
     </footer>
   );

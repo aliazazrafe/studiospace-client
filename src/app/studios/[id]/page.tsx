@@ -1,4 +1,5 @@
 
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -154,10 +155,13 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
-export default async function StudioDetailsPage({ params }: Props) {
+// Dynamic params are read inside the Suspense boundary.
+async function StudioDetailsContent({ params }: Props) {
   const { id } = await params;
 
-  const studio = studios.find((item) => item.id === Number(id));
+  const studio = studios.find(
+    (item) => item.id === Number(id)
+  );
 
   if (!studio) {
     notFound();
@@ -187,6 +191,7 @@ export default async function StudioDetailsPage({ params }: Props) {
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-600 sm:text-sm">
             <span>📍 {studio.location}</span>
+
             <span className="font-medium text-gray-800">
               ⭐ {studio.rating} ({studio.reviews} reviews)
             </span>
@@ -195,6 +200,7 @@ export default async function StudioDetailsPage({ params }: Props) {
 
         {/* IMAGE GALLERY */}
         <div className="grid grid-cols-1 gap-2 overflow-hidden rounded-2xl sm:gap-3 md:grid-cols-3">
+
           {/* MAIN IMAGE */}
           <div className="relative h-[250px] overflow-hidden rounded-xl bg-gray-100 sm:h-[350px] md:col-span-2 md:h-[420px] md:rounded-l-2xl md:rounded-r-none">
             <Image
@@ -262,6 +268,7 @@ export default async function StudioDetailsPage({ params }: Props) {
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-50 text-sm font-bold text-orange-500">
                       ✓
                     </span>
+
                     {item}
                   </div>
                 ))}
@@ -285,6 +292,7 @@ export default async function StudioDetailsPage({ params }: Props) {
                   <h3 className="text-sm font-semibold text-gray-900 sm:text-base">
                     StudioSpace Host
                   </h3>
+
                   <p className="mt-1 text-xs text-gray-500 sm:text-sm">
                     Studio owner
                   </p>
@@ -326,5 +334,26 @@ export default async function StudioDetailsPage({ params }: Props) {
         </div>
       </div>
     </main>
+  );
+}
+
+// Suspense boundary for Next.js 16 dynamic route.
+export default function StudioDetailsPage(props: Props) {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-10">
+            <div className="h-8 w-64 animate-pulse rounded bg-gray-200" />
+            <div className="mt-6 h-[350px] animate-pulse rounded-2xl bg-gray-100" />
+            <p className="mt-6 text-sm text-gray-500">
+              Loading studio details...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <StudioDetailsContent {...props} />
+    </Suspense>
   );
 }
