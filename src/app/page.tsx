@@ -11,7 +11,8 @@ const featuredStudios = [
     price: 1200,
     rating: 4.9,
     reviews: 120,
-    image: "https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=900&auto=format&fit=crop",
   },
   {
     id: 2,
@@ -21,7 +22,8 @@ const featuredStudios = [
     price: 1500,
     rating: 4.8,
     reviews: 85,
-    image: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=900&auto=format&fit=crop",
   },
   {
     id: 3,
@@ -31,7 +33,8 @@ const featuredStudios = [
     price: 1800,
     rating: 4.7,
     reviews: 96,
-    image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=900&auto=format&fit=crop",
   },
   {
     id: 4,
@@ -41,7 +44,8 @@ const featuredStudios = [
     price: 1000,
     rating: 4.8,
     reviews: 72,
-    image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=900&auto=format&fit=crop",
   },
   {
     id: 5,
@@ -51,7 +55,8 @@ const featuredStudios = [
     price: 2500,
     rating: 4.9,
     reviews: 110,
-    image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&auto=format&fit=crop",
   },
   {
     id: 6,
@@ -61,7 +66,8 @@ const featuredStudios = [
     price: 1300,
     rating: 4.6,
     reviews: 65,
-    image: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop",
   },
 ];
 
@@ -69,55 +75,74 @@ const categories = [
   {
     title: "Photography Studios",
     subtitle: "Capture Every Moment",
-    image: "https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=900&auto=format&fit=crop",
   },
   {
     title: "Podcast Rooms",
     subtitle: "Share Your Voice",
-    image: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=900&auto=format&fit=crop",
   },
   {
     title: "Music Studios",
     subtitle: "Create Your Sound",
-    image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=900&auto=format&fit=crop",
   },
   {
     title: "Art Workshops",
     subtitle: "Bring Ideas to Life",
-    image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=900&auto=format&fit=crop",
   },
   {
     title: "Sound Stages",
     subtitle: "Professional Production",
-    image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&auto=format&fit=crop",
   },
   {
     title: "Other Creative Spaces",
     subtitle: "Discover More Spaces",
-    image: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop",
   },
 ];
+
+const categoryRoutes: Record<string, string> = {
+  "Photography Studios": "Photo Studios",
+  "Podcast Rooms": "Podcast Rooms",
+  "Music Studios": "Music Suites",
+  "Art Workshops": "Art Workshops",
+  "Sound Stages": "Sound Stages",
+  "Other Creative Spaces": "All Studios",
+};
 
 const features = [
   {
     icon: "🛡️",
     title: "Trusted Spaces",
-    description: "Discover suitable creative spaces with clear information and details.",
+    description:
+      "Discover suitable creative spaces with clear information and details.",
   },
   {
     icon: "📅",
     title: "Easy Booking",
-    description: "Find your preferred studio and submit your booking request easily.",
+    description:
+      "Find your preferred studio and submit your booking request easily.",
   },
   {
     icon: "💰",
     title: "Flexible Pricing",
-    description: "Explore different studios and choose one that fits your budget.",
+    description:
+      "Explore different studios and choose one that fits your budget.",
   },
   {
     icon: "🎧",
     title: "Customer Support",
-    description: "Get assistance whenever you need help with your studio experience.",
+    description:
+      "Get assistance whenever you need help with your studio experience.",
   },
 ];
 
@@ -126,19 +151,22 @@ const steps = [
     icon: "🔍",
     number: "STEP 01",
     title: "Find Your Studio",
-    description: "Explore photography, podcast, music and creative studios to find the perfect space for your project.",
+    description:
+      "Explore photography, podcast, music and creative studios to find the perfect space for your project.",
   },
   {
     icon: "📅",
     number: "STEP 02",
     title: "Book Your Space",
-    description: "Choose your preferred date and time, review the studio details and complete your booking request.",
+    description:
+      "Choose your preferred date and time, review the studio details and complete your booking request.",
   },
   {
     icon: "✨",
     number: "STEP 03",
     title: "Start Creating",
-    description: "Visit your booked studio, bring your ideas and turn your creative vision into reality.",
+    description:
+      "Visit your booked studio, bring your ideas and turn your creative vision into reality.",
   },
 ];
 
@@ -147,33 +175,34 @@ const testimonials = [
     name: "Sarah Ahmed",
     role: "Photographer",
     initials: "SA",
-    review: "Finding a photography space for my projects has become much easier. I love how simple the studio discovery process is.",
+    review:
+      "Finding a photography space for my projects has become much easier. I love how simple the studio discovery process is.",
   },
   {
     name: "Rahim Hasan",
     role: "Content Creator",
     initials: "RH",
-    review: "StudioSpace makes it easier to discover creative spaces. It is a convenient concept for creators like me.",
+    review:
+      "StudioSpace makes it easier to discover creative spaces. It is a convenient concept for creators like me.",
   },
   {
     name: "Nusrat Jahan",
     role: "Studio Owner",
     initials: "NJ",
-    review: "I love the idea of connecting studio owners with people who need creative spaces. It makes discovering opportunities easier.",
+    review:
+      "I love the idea of connecting studio owners with people who need creative spaces. It makes discovering opportunities easier.",
   },
 ];
 
 export default function Home() {
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-white">
-
       {/* HERO */}
       <HeroSlider />
 
       {/* FEATURED STUDIOS */}
       <section className="px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
         <div className="mx-auto max-w-7xl">
-
           <div className="mb-7 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 sm:text-sm">
@@ -215,7 +244,8 @@ export default function Home() {
 
                 <div className="p-4 sm:p-5">
                   <div className="mb-2 text-sm font-semibold text-gray-700">
-                    <span className="text-yellow-500">★</span> {studio.rating}
+                    <span className="text-yellow-500">★</span>{" "}
+                    {studio.rating}
                     <span className="ml-1 font-normal text-gray-500">
                       ({studio.reviews} reviews)
                     </span>
@@ -263,7 +293,6 @@ export default function Home() {
       {/* HOW IT WORKS */}
       <section className="bg-gray-50 px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
-
           <div className="mx-auto mb-9 max-w-2xl text-center sm:mb-14">
             <p className="text-xs font-bold uppercase tracking-widest text-gray-500 sm:text-sm">
               Simple Booking Process
@@ -272,8 +301,8 @@ export default function Home() {
               How StudioSpace Works
             </h2>
             <p className="mt-3 text-sm leading-6 text-gray-600 sm:mt-4 sm:text-base sm:leading-7">
-              Finding and booking your perfect creative space is easier than ever.
-              Just follow these three simple steps.
+              Finding and booking your perfect creative space is easier than
+              ever. Just follow these three simple steps.
             </p>
           </div>
 
@@ -316,7 +345,6 @@ export default function Home() {
       {/* CATEGORIES */}
       <section className="bg-white px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
-
           <div className="mb-8 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-gray-500 sm:text-sm">
@@ -326,7 +354,8 @@ export default function Home() {
                 Browse by Category
               </h2>
               <p className="mt-2 max-w-xl text-sm leading-6 text-gray-600 sm:mt-3 sm:text-base sm:leading-7">
-                Find the perfect creative space for photography, music, podcasting and more.
+                Find the perfect creative space for photography, music,
+                podcasting and more.
               </p>
             </div>
 
@@ -342,7 +371,9 @@ export default function Home() {
             {categories.map((category) => (
               <Link
                 key={category.title}
-                href="/studios"
+                href={`/studios?category=${encodeURIComponent(
+                  categoryRoutes[category.title] ?? "All Studios"
+                )}`}
                 className="group relative h-56 overflow-hidden rounded-xl sm:h-64 sm:rounded-2xl lg:h-72"
               >
                 <img
@@ -374,7 +405,6 @@ export default function Home() {
       {/* WHY CHOOSE US */}
       <section className="bg-gray-50 px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
-
           <div className="mx-auto mb-9 max-w-2xl text-center sm:mb-14">
             <p className="text-xs font-bold uppercase tracking-widest text-gray-500 sm:text-sm">
               Why Choose Us
@@ -383,7 +413,8 @@ export default function Home() {
               Why StudioSpace?
             </h2>
             <p className="mt-3 text-sm leading-6 text-gray-600 sm:mt-4 sm:text-base sm:leading-7">
-              We make finding and booking creative spaces simple, convenient and accessible for everyone.
+              We make finding and booking creative spaces simple, convenient
+              and accessible for everyone.
             </p>
           </div>
 
@@ -413,7 +444,6 @@ export default function Home() {
       <section className="bg-white px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
           <div className="grid items-center gap-7 overflow-hidden rounded-2xl bg-gray-900 p-5 sm:gap-10 sm:rounded-3xl sm:p-8 md:p-10 lg:grid-cols-2 lg:gap-12 lg:p-14 xl:p-16">
-
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400 sm:text-sm">
                 Grow With StudioSpace
@@ -424,8 +454,9 @@ export default function Home() {
               </h2>
 
               <p className="mt-4 text-sm leading-7 text-gray-300 sm:mt-6 sm:text-base sm:leading-8">
-                Have a photography studio, podcast room, music space or creative workspace?
-                List your space on StudioSpace and connect with creators looking for the perfect place.
+                Have a photography studio, podcast room, music space or
+                creative workspace? List your space on StudioSpace and
+                connect with creators looking for the perfect place.
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-4">
@@ -473,7 +504,6 @@ export default function Home() {
                 className="h-full w-full object-cover"
               />
             </div>
-
           </div>
         </div>
       </section>
@@ -481,7 +511,6 @@ export default function Home() {
       {/* TESTIMONIALS */}
       <section className="bg-gray-50 px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
-
           <div className="mx-auto mb-9 max-w-2xl text-center sm:mb-14">
             <p className="text-xs font-bold uppercase tracking-widest text-gray-500 sm:text-sm">
               Community Feedback
@@ -490,7 +519,8 @@ export default function Home() {
               What People Say
             </h2>
             <p className="mt-3 text-sm leading-6 text-gray-600 sm:mt-4 sm:text-base sm:leading-7">
-              Discover what creators and studio owners think about their StudioSpace experience.
+              Discover what creators and studio owners think about their
+              StudioSpace experience.
             </p>
           </div>
 
@@ -505,7 +535,7 @@ export default function Home() {
                 </div>
 
                 <p className="mt-4 text-sm leading-7 text-gray-600 sm:mt-5">
-                  "{testimonial.review}"
+                  &quot;{testimonial.review}&quot;
                 </p>
 
                 <div className="mt-5 flex items-center gap-3 border-t border-gray-100 pt-5 sm:mt-7 sm:gap-4 sm:pt-6">
@@ -527,7 +557,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
     </main>
   );
 }

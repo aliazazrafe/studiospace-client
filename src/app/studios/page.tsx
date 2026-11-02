@@ -1,8 +1,9 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const categories = [
   "All Studios",
@@ -76,10 +77,41 @@ const studios = [
   },
 ];
 
-export default function StudiosPage() {
+function StudiosPageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] =
-    useState("All Studios");
+
+  const categoryFromUrl = searchParams.get("category");
+
+  const selectedCategory =
+    categoryFromUrl && categories.includes(categoryFromUrl)
+      ? categoryFromUrl
+      : "All Studios";
+
+  const handleCategoryChange = (category: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (category === "All Studios") {
+      params.delete("category");
+    } else {
+      params.set("category", category);
+    }
+
+    const query = params.toString();
+
+    router.replace(
+      query ? `${pathname}?${query}` : pathname,
+      { scroll: false }
+    );
+  };
+
+  const clearFilters = () => {
+    setSearch("");
+    handleCategoryChange("All Studios");
+  };
 
   const filteredStudios = useMemo(() => {
     return studios.filter((studio) => {
@@ -101,7 +133,6 @@ export default function StudiosPage() {
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-[#faf9f6]">
       <section className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
-
         {/* PAGE HEADING */}
         <div className="mb-7 text-center sm:mb-9">
           <p className="mb-2 text-[11px] font-bold uppercase tracking-[2px] text-orange-500 sm:text-xs sm:tracking-[2.5px]">
@@ -150,7 +181,9 @@ export default function StudiosPage() {
             {categories.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
+                type="button"
+                onClick={() => handleCategoryChange(category)}
+                aria-pressed={selectedCategory === category}
                 className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-semibold transition sm:px-5 sm:py-2.5 sm:text-sm ${
                   selectedCategory === category
                     ? "bg-orange-500 text-white shadow-sm"
@@ -245,10 +278,8 @@ export default function StudiosPage() {
             </p>
 
             <button
-              onClick={() => {
-                setSearch("");
-                setSelectedCategory("All Studios");
-              }}
+              type="button"
+              onClick={clearFilters}
               className="mt-5 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
             >
               Clear Filters
@@ -257,5 +288,19 @@ export default function StudiosPage() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function StudiosPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#faf9f6] px-4 py-16 text-center text-sm text-gray-600">
+          Loading studios...
+        </main>
+      }
+    >
+      <StudiosPageContent />
+    </Suspense>
   );
 }

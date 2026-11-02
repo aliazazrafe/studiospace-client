@@ -1,8 +1,9 @@
-
+﻿
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import BookingModal from "../../../components/BookingModal";
 
 const studios = [
   {
@@ -155,13 +156,10 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
-// Dynamic params are read inside the Suspense boundary.
 async function StudioDetailsContent({ params }: Props) {
   const { id } = await params;
 
-  const studio = studios.find(
-    (item) => item.id === Number(id)
-  );
+  const studio = studios.find((item) => item.id === Number(id));
 
   if (!studio) {
     notFound();
@@ -170,7 +168,6 @@ async function StudioDetailsContent({ params }: Props) {
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-white">
       <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-
         {/* BACK BUTTON */}
         <Link
           href="/studios"
@@ -200,7 +197,6 @@ async function StudioDetailsContent({ params }: Props) {
 
         {/* IMAGE GALLERY */}
         <div className="grid grid-cols-1 gap-2 overflow-hidden rounded-2xl sm:gap-3 md:grid-cols-3">
-
           {/* MAIN IMAGE */}
           <div className="relative h-[250px] overflow-hidden rounded-xl bg-gray-100 sm:h-[350px] md:col-span-2 md:h-[420px] md:rounded-l-2xl md:rounded-r-none">
             <Image
@@ -236,10 +232,8 @@ async function StudioDetailsContent({ params }: Props) {
 
         {/* MAIN CONTENT */}
         <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:mt-10 lg:grid-cols-3 lg:gap-10">
-
           {/* LEFT CONTENT */}
           <div className="min-w-0 lg:col-span-2">
-
             {/* ABOUT */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
@@ -320,16 +314,11 @@ async function StudioDetailsContent({ params }: Props) {
               </p>
             </div>
 
-            <Link
-              href="/login"
-              className="mt-4 block w-full rounded-xl bg-gray-900 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-500 sm:mt-5 sm:py-3.5"
-            >
-              Book This Studio →
-            </Link>
-
-            <p className="mt-3 text-center text-xs text-gray-500">
-              Login required to continue booking.
-            </p>
+            {/* BOOKING MODAL */}
+            <BookingModal
+              studioName={studio.name}
+              hourlyRate={studio.price}
+            />
           </aside>
         </div>
       </div>
@@ -337,7 +326,6 @@ async function StudioDetailsContent({ params }: Props) {
   );
 }
 
-// Suspense boundary for Next.js 16 dynamic route.
 export default function StudioDetailsPage(props: Props) {
   return (
     <Suspense
@@ -357,3 +345,4 @@ export default function StudioDetailsPage(props: Props) {
     </Suspense>
   );
 }
+
