@@ -1,132 +1,490 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:5000"
+).replace(/\/$/, "");
+
+type BookingStatus =
+  | "Pending"
+  | "Confirmed"
+  | "Completed"
+  | "Cancelled";
+
+type StudioInfo = {
+  _id?: string;
+  name?: string;
+  category?: string;
+  location?: string;
+  images?: string[];
+  image?: string;
+  description?: string;
+  price?: number;
+};
+
+type ApiBooking = {
+  _id?: string;
+  id?: string;
+  studioId?: string | StudioInfo;
+  studio?: StudioInfo;
+  studioName?: string;
+  category?: string;
+  location?: string;
+  image?: string;
+  startAt?: string;
+  endAt?: string;
+  status?: string;
+  totalPrice?: number | null;
+  price?: number;
+  description?: string;
+};
+
 type Booking = {
-  id: number;
+  id: string;
+  studioId: string;
   studioName: string;
   category: string;
   location: string;
   image: string;
-  date: string;
-  time: string;
-  duration: number;
-  price: number;
-  status: "Confirmed" | "Pending" | "Cancelled";
   description: string;
+  startAt: string;
+  endAt: string;
+  status: BookingStatus;
+  totalPrice: number | null;
 };
 
-const initialBookings: Booking[] = [
-  {
-    id: 1,
-    studioName: "Professional Photography Studio",
-    category: "Photo Studios",
-    location: "Dhanmondi, Dhaka",
-    image:
-      "https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=800",
-    date: "2026-11-05",
-    time: "10:00 AM - 12:00 PM",
-    duration: 2,
-    price: 2400,
-    status: "Confirmed",
-    description:
-      "A professional photography studio with modern lighting and photography equipment.",
-  },
-  {
-    id: 2,
-    studioName: "Podcast Recording Studio",
-    category: "Podcast Rooms",
-    location: "Gulshan, Dhaka",
-    image:
-      "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800",
-    date: "2026-11-08",
-    time: "02:00 PM - 04:00 PM",
-    duration: 2,
-    price: 3000,
-    status: "Pending",
-    description:
-      "A comfortable podcast studio with professional microphones and sound equipment.",
-  },
-  {
-    id: 3,
-    studioName: "Music Recording Studio",
-    category: "Music Suites",
-    location: "Banani, Dhaka",
-    image:
-      "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800",
-    date: "2026-10-25",
-    time: "11:00 AM - 02:00 PM",
-    duration: 3,
-    price: 5400,
-    status: "Cancelled",
-    description:
-      "A modern music recording studio for musicians, singers and creators.",
-  },
-];
+const filters = [
+  "All",
+  "Confirmed",
+  "Pending",
+  "Completed",
+  "Cancelled",
+] as const;
 
-const filters = ["All", "Confirmed", "Pending", "Cancelled"];
+type Filter = (typeof filters)[number];
 
-const formatDate = (date: string) => {
-  return new Date(`${date}T12:00:00`).toLocaleDateString("en-GB", {
+function normalizeStatus(value?: string): BookingStatus {
+  switch (value?.toLowerCase()) {
+    case "confirmed":
+      return "Confirmed";
+    case "completed":
+      return "Completed";
+    case "cancelled":
+    case "canceled":
+      return "Cancelled";
+    default:
+      return "Pending";
+  }
+}
+
+function validImageUrl(value: unknown): value is string {
+  if (typeof value !== "string" || !value.trim()) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value.trim());
+
+    return (
+      url.protocol === "https:" ||
+      url.protocol === "http:"
+    );
+  } catch {
+    return false;
+  }
+}
+
+function normalizeBooking(item: ApiBooking): Booking | null {
+  const id = item._id ?? item.id;
+
+  if (!id) return null;
+
+  const populatedStudio =
+    typeof item.studioId === "object"
+      ? item.studioId
+      : undefined;
+
+  const studio = item.studio ?? populatedStudio;
+
+  const studioId =
+    typeof item.studioId === "string"
+      ? item.studioId
+      : studio?._id ?? "";
+
+  const imageCandidates = [
+    ...(Array.isArray(studio?.images)
+      ? studio.images
+      : []),
+    studio?.image,
+    item.image,
+  ];
+
+  const image =
+    imageCandidates.find(validImageUrl) ?? "";
+
+  const startAt = item.startAt ?? "";
+  const endAt = item.endAt ?? "";
+
+  const durationHours =
+    (new Date(endAt).getTime() -
+      new Date(startAt).getTime()) /
+    3600000;
+
+  const totalPrice =
+    typeof item.totalPrice === "number" &&
+    Number.isFinite(item.totalPrice)
+      ? item.totalPrice
+      : typeof item.price === "number" &&
+          Number.isFinite(item.price) &&
+          Number.isFinite(durationHours) &&
+          durationHours > 0
+        ? Math.round(
+            item.price * durationHours * 100
+          ) / 100
+        : null;
+
+  return {
+    id: String(id),
+    studioId: String(studioId),
+    studioName:
+      studio?.name ??
+      item.studioName ??
+      "Creative Studio",
+    category:
+      studio?.category ??
+      item.category ??
+      "Studio",
+    location:
+      studio?.location ??
+      item.location ??
+      "Location unavailable",
+    image,
+    description:
+      studio?.description ??
+      item.description ??
+      "",
+    startAt,
+    endAt,
+    status: normalizeStatus(item.status),
+    totalPrice,
+  };
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Not available";
+  }
+
+  return date.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "Asia/Dhaka",
   });
-};
+}
 
-const statusStyle = (status: Booking["status"]) => {
+function formatTime(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "N/A";
+  }
+
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Dhaka",
+  });
+}
+
+function formatTimeRange(booking: Booking) {
+  return `${formatTime(booking.startAt)} - ${formatTime(
+    booking.endAt
+  )}`;
+}
+
+function getDuration(booking: Booking) {
+  const start = new Date(booking.startAt).getTime();
+  const end = new Date(booking.endAt).getTime();
+
+  if (
+    !Number.isFinite(start) ||
+    !Number.isFinite(end) ||
+    end <= start
+  ) {
+    return null;
+  }
+
+  return (end - start) / 3600000;
+}
+
+function formatDuration(booking: Booking) {
+  const duration = getDuration(booking);
+
+  if (duration === null) return "Not available";
+
+  const rounded = Number(duration.toFixed(2));
+
+  return `${rounded} ${
+    rounded === 1 ? "Hour" : "Hours"
+  }`;
+}
+
+function formatPrice(value: number | null) {
+  if (
+    value === null ||
+    !Number.isFinite(value)
+  ) {
+    return "Not available";
+  }
+
+  return `৳${value.toLocaleString("en-BD")}`;
+}
+
+function statusStyle(status: BookingStatus) {
   switch (status) {
     case "Confirmed":
       return "bg-green-100 text-green-700";
     case "Pending":
       return "bg-amber-100 text-amber-700";
+    case "Completed":
+      return "bg-blue-100 text-blue-700";
     case "Cancelled":
       return "bg-red-100 text-red-700";
   }
-};
+}
+
+function BookingImage({
+  src,
+  alt,
+  className = "",
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) {
+  const [failedUrl, setFailedUrl] = useState<
+    string | null
+  >(null);
+
+  const showImage =
+    validImageUrl(src) && failedUrl !== src;
+
+  return (
+    <div
+      className={`relative overflow-hidden bg-gradient-to-br from-slate-100 via-slate-200 to-orange-100 ${className}`}
+    >
+      {showImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={() => setFailedUrl(src)}
+        />
+      ) : (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/80 shadow-sm">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-slate-500"
+              aria-hidden="true"
+            >
+              <rect
+                x="3"
+                y="3"
+                width="18"
+                height="18"
+                rx="2"
+              />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path d="m21 15-5-5L5 21" />
+            </svg>
+          </div>
+
+          <span className="max-w-full break-words text-sm font-semibold text-slate-600">
+            {alt}
+          </span>
+
+          <span className="text-xs text-slate-500">
+            Studio image unavailable
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function MyBookingsPage() {
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings);
-  const [filter, setFilter] = useState("All");
+  const [bookings, setBookings] = useState<
+    Booking[]
+  >([]);
+
+  const [filter, setFilter] =
+    useState<Filter>("All");
+
   const [search, setSearch] = useState("");
 
-  const [cancelId, setCancelId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] =
+    useState(true);
+
+  const [error, setError] = useState("");
+
+  const [reloadKey, setReloadKey] =
+    useState(0);
+
+  const [cancelId, setCancelId] = useState<
+    string | null
+  >(null);
+
   const [selectedBooking, setSelectedBooking] =
     useState<Booking | null>(null);
 
-  const [isCancelling, setIsCancelling] = useState(false);
+  const [isCancelling, setIsCancelling] =
+    useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadBookings() {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/bookings/my`,
+          {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+            signal: controller.signal,
+          }
+        );
+
+        const data = await response
+          .json()
+          .catch(() => ({}));
+
+        if (
+          !response.ok ||
+          data.success === false
+        ) {
+          throw new Error(
+            data.message ||
+              data.error ||
+              `Unable to load bookings (${response.status}).`
+          );
+        }
+
+        const rawBookings: ApiBooking[] =
+          Array.isArray(data)
+            ? data
+            : Array.isArray(data.bookings)
+              ? data.bookings
+              : Array.isArray(data.data)
+                ? data.data
+                : [];
+
+        const normalized = rawBookings
+          .map(normalizeBooking)
+          .filter(
+            (item): item is Booking =>
+              item !== null
+          );
+
+        if (controller.signal.aborted) return;
+
+        setBookings(normalized);
+        setError("");
+      } catch (err) {
+        if (controller.signal.aborted) return;
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load bookings."
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadBookings();
+
+    return () => controller.abort();
+  }, [reloadKey]);
+
+  const retry = useCallback(() => {
+    setIsLoading(true);
+    setError("");
+    setReloadKey((previous) => previous + 1);
+  }, []);
 
   const bookingToCancel =
-    bookings.find((booking) => booking.id === cancelId) ?? null;
+    bookings.find(
+      (booking) => booking.id === cancelId
+    ) ?? null;
 
   const filteredBookings = useMemo(() => {
-    const searchText = search.trim().toLowerCase();
+    const searchText = search
+      .trim()
+      .toLowerCase();
 
     return bookings.filter((booking) => {
       const matchesFilter =
-        filter === "All" || booking.status === filter;
+        filter === "All" ||
+        booking.status === filter;
 
       const matchesSearch =
-        booking.studioName.toLowerCase().includes(searchText) ||
-        booking.location.toLowerCase().includes(searchText);
+        booking.studioName
+          .toLowerCase()
+          .includes(searchText) ||
+        booking.location
+          .toLowerCase()
+          .includes(searchText);
 
       return matchesFilter && matchesSearch;
     });
   }, [bookings, filter, search]);
 
   const confirmedCount = bookings.filter(
-    (booking) => booking.status === "Confirmed"
+    (booking) =>
+      booking.status === "Confirmed"
   ).length;
 
   const pendingCount = bookings.filter(
     (booking) => booking.status === "Pending"
   ).length;
 
+  const completedCount = bookings.filter(
+    (booking) =>
+      booking.status === "Completed"
+  ).length;
+
   const cancelledCount = bookings.filter(
-    (booking) => booking.status === "Cancelled"
+    (booking) =>
+      booking.status === "Cancelled"
   ).length;
 
   const closeCancelModal = () => {
@@ -135,91 +493,131 @@ export default function MyBookingsPage() {
   };
 
   const handleCancel = async () => {
-    if (cancelId === null || isCancelling) return;
+    if (!bookingToCancel || isCancelling) {
+      return;
+    }
 
-    const booking = bookings.find(
-      (item) => item.id === cancelId
-    );
-
-    if (!booking || booking.status === "Cancelled") {
+    if (bookingToCancel.status !== "Pending") {
+      toast.error(
+        "Only pending bookings can be cancelled."
+      );
       setCancelId(null);
-      toast.error("This booking cannot be cancelled.");
       return;
     }
 
     setIsCancelling(true);
 
     try {
-      // Demo delay. Replace with a backend API request later.
-      await new Promise<void>((resolve) =>
-        setTimeout(resolve, 1200)
+      const response = await fetch(
+        `${API_URL}/api/bookings/${bookingToCancel.id}/cancel`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      const updatedBooking: Booking = {
-        ...booking,
-        status: "Cancelled",
-      };
+      const data = await response
+        .json()
+        .catch(() => ({}));
+
+      if (
+        !response.ok ||
+        data.success === false
+      ) {
+        throw new Error(
+          data.message ||
+            data.error ||
+            `Unable to cancel booking (${response.status}).`
+        );
+      }
+
+      const bookingId = bookingToCancel.id;
 
       setBookings((previous) =>
-        previous.map((item) =>
-          item.id === booking.id ? updatedBooking : item
+        previous.map((booking) =>
+          booking.id === bookingId
+            ? {
+                ...booking,
+                status: "Cancelled",
+              }
+            : booking
         )
       );
 
       setSelectedBooking((previous) =>
-        previous?.id === booking.id
-          ? updatedBooking
+        previous?.id === bookingId
+          ? {
+              ...previous,
+              status: "Cancelled",
+            }
           : previous
       );
 
       setCancelId(null);
 
-      toast.success("Booking cancelled in this demo view.", {
-        description:
-          "The status changed to Cancelled locally. No database changes were made.",
-      });
-    } catch {
-      toast.error("Unable to cancel booking. Please try again.");
+      toast.success(
+        "Booking cancelled successfully."
+      );
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Unable to cancel booking."
+      );
     } finally {
       setIsCancelling(false);
     }
   };
 
-  // Allow Escape key to close modals when not processing.
   useEffect(() => {
-    if (cancelId === null && selectedBooking === null) {
+    if (!cancelId && !selectedBooking) {
       return;
     }
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleEscape = (
+      event: KeyboardEvent
+    ) => {
       if (event.key !== "Escape") return;
 
-      if (cancelId !== null) {
-        if (!isCancelling) setCancelId(null);
+      if (cancelId) {
+        if (!isCancelling) {
+          setCancelId(null);
+        }
       } else {
         setSelectedBooking(null);
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener(
+      "keydown",
+      handleEscape
+    );
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener(
+        "keydown",
+        handleEscape
+      );
     };
-  }, [cancelId, selectedBooking, isCancelling]);
+  }, [
+    cancelId,
+    selectedBooking,
+    isCancelling,
+  ]);
 
   return (
     <main className="min-h-screen bg-gray-50 px-3 py-6 text-gray-900 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-7xl">
-        {/* Back Button */}
         <Link
           href="/"
-          className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition hover:text-black"
+          className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-black"
         >
-          <span>←</span> Back to Home
+          ← Back to Home
         </Link>
 
-        {/* Page Header */}
         <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
@@ -231,80 +629,90 @@ export default function MyBookingsPage() {
             </h1>
 
             <p className="mt-2 text-sm text-gray-500">
-              Manage and track all your studio reservations.
+              Manage and track all your
+              studio reservations.
             </p>
           </div>
 
           <Link
             href="/studios"
-            className="inline-flex w-full items-center justify-center rounded-lg bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 sm:w-fit"
+            className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-5 py-3 text-sm font-semibold text-white hover:bg-gray-800"
           >
             + Explore Studios
           </Link>
         </div>
 
-        {/* Statistics */}
-        <div className="mb-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4">
-            <p className="text-xs text-gray-500 sm:text-sm">
-              Total Bookings
-            </p>
+        {/* BOOKING STATISTICS */}
+        <div className="mb-7 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
+          {[
+            {
+              label: "Total Bookings",
+              count: bookings.length,
+              color: "text-gray-900",
+            },
+            {
+              label: "Confirmed",
+              count: confirmedCount,
+              color: "text-green-600",
+            },
+            {
+              label: "Pending",
+              count: pendingCount,
+              color: "text-amber-600",
+            },
+            {
+              label: "Completed",
+              count: completedCount,
+              color: "text-blue-600",
+            },
+            {
+              label: "Cancelled",
+              count: cancelledCount,
+              color: "text-red-600",
+            },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4"
+            >
+              <p className="text-xs text-gray-500 sm:text-sm">
+                {stat.label}
+              </p>
 
-            <h2 className="mt-2 text-2xl font-bold sm:text-3xl">
-              {bookings.length}
-            </h2>
-          </div>
-
-          <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4">
-            <p className="text-xs text-gray-500 sm:text-sm">
-              Confirmed
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold text-green-600 sm:text-3xl">
-              {confirmedCount}
-            </h2>
-          </div>
-
-          <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4">
-            <p className="text-xs text-gray-500 sm:text-sm">
-              Pending
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold text-amber-600 sm:text-3xl">
-              {pendingCount}
-            </h2>
-          </div>
-
-          <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4">
-            <p className="text-xs text-gray-500 sm:text-sm">
-              Cancelled
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold text-red-600 sm:text-3xl">
-              {cancelledCount}
-            </h2>
-          </div>
+              <h2
+                className={`mt-2 text-2xl font-bold sm:text-3xl ${stat.color}`}
+              >
+                {stat.count}
+              </h2>
+            </div>
+          ))}
         </div>
 
-        {/* Search and Filters */}
+        {/* SEARCH AND FILTER */}
         <div className="mb-5 rounded-xl border border-gray-200 bg-white p-3 sm:p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <input
               type="search"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(event) =>
+                setSearch(event.target.value)
+              }
               placeholder="Search studio or location..."
               aria-label="Search bookings"
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 lg:max-w-sm"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:border-gray-900 lg:max-w-sm"
             />
 
-            <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {filters.map((item) => (
                 <button
                   key={item}
                   type="button"
-                  onClick={() => setFilter(item)}
-                  aria-pressed={filter === item}
+                  onClick={() =>
+                    setFilter(item)
+                  }
+                  aria-pressed={
+                    filter === item
+                  }
                   className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition sm:text-sm ${
                     filter === item
                       ? "bg-gray-900 text-white"
@@ -318,169 +726,221 @@ export default function MyBookingsPage() {
           </div>
         </div>
 
-        {/* Booking List */}
-        <div className="space-y-4">
-          {filteredBookings.length > 0 ? (
-            filteredBookings.map((booking) => (
+        {/* LOADING / ERROR / BOOKINGS */}
+        {isLoading ? (
+          <div
+            role="status"
+            className="space-y-4"
+          >
+            {[1, 2, 3].map((item) => (
               <div
-                key={booking.id}
-                className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
-              >
-                <div className="flex flex-col sm:flex-row">
-                  {/* Image */}
-                  <div className="relative h-48 w-full shrink-0 sm:min-h-64 sm:w-56 lg:w-64">
-                    <img
-                      src={booking.image}
-                      alt={booking.studioName}
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
-                  </div>
+                key={item}
+                className="h-56 animate-pulse rounded-xl border border-gray-200 bg-gray-200"
+              />
+            ))}
 
-                  {/* Booking Information */}
-                  <div className="min-w-0 flex-1 p-4 sm:p-5">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                        {booking.category}
-                      </span>
+            <span className="sr-only">
+              Loading bookings...
+            </span>
+          </div>
+        ) : error ? (
+          <div className="rounded-xl border border-red-200 bg-white px-5 py-12 text-center">
+            <h2 className="text-lg font-bold">
+              Unable to load your bookings
+            </h2>
 
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyle(
-                          booking.status
-                        )}`}
-                      >
-                        {booking.status}
-                      </span>
-                    </div>
+            <p className="mt-3 text-sm text-red-600">
+              {error}
+            </p>
 
-                    <h2 className="mt-2 break-words text-lg font-bold sm:text-xl">
-                      {booking.studioName}
-                    </h2>
+            <button
+              type="button"
+              onClick={retry}
+              className="mt-5 rounded-lg bg-gray-900 px-5 py-3 text-sm font-semibold text-white"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredBookings.length > 0 ? (
+              filteredBookings.map(
+                (booking) => (
+                  <article
+                    key={booking.id}
+                    className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+                  >
+                    <div className="flex flex-col sm:flex-row">
+                      <BookingImage
+                        src={booking.image}
+                        alt={
+                          booking.studioName
+                        }
+                        className="h-48 w-full shrink-0 sm:h-auto sm:min-h-64 sm:w-56 lg:w-64"
+                      />
 
-                    <p className="mt-1 text-sm text-gray-500">
-                      📍 {booking.location}
-                    </p>
+                      <div className="min-w-0 flex-1 p-4 sm:p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            {booking.category}
+                          </span>
 
-                    {/* Booking Schedule */}
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                      <div>
-                        <p className="text-xs text-gray-400">
-                          Booking Date
-                        </p>
-
-                        <p className="mt-1 font-semibold">
-                          {formatDate(booking.date)}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-gray-400">
-                          Booking Time
-                        </p>
-
-                        <p className="mt-1 font-semibold">
-                          {booking.time}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-gray-400">
-                          Duration
-                        </p>
-
-                        <p className="mt-1 font-semibold">
-                          {booking.duration} Hours
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Price and Actions */}
-                    <div className="mt-4 flex flex-col justify-between gap-4 border-t border-gray-100 pt-4 sm:flex-row sm:items-center">
-                      <div>
-                        <p className="text-xs text-gray-400">
-                          Total Price
-                        </p>
-
-                        <p className="mt-1 text-xl font-bold">
-                          ৳{booking.price.toLocaleString("en-BD")}
-                        </p>
-                      </div>
-
-                      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSelectedBooking(booking)
-                          }
-                          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-gray-100 sm:w-auto"
-                        >
-                          View Details
-                        </button>
-
-                        {booking.status !== "Cancelled" && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setCancelId(booking.id)
-                            }
-                            disabled={isCancelling}
-                            className="w-full rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyle(
+                              booking.status
+                            )}`}
                           >
-                            Cancel Booking
-                          </button>
-                        )}
+                            {booking.status}
+                          </span>
+                        </div>
+
+                        <h2 className="mt-2 break-words text-lg font-bold sm:text-xl">
+                          {booking.studioName}
+                        </h2>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                          📍 {booking.location}
+                        </p>
+
+                        <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+                          <div>
+                            <p className="text-xs text-gray-400">
+                              Booking Date
+                            </p>
+
+                            <p className="mt-1 font-semibold">
+                              {formatDate(
+                                booking.startAt
+                              )}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-xs text-gray-400">
+                              Booking Time
+                            </p>
+
+                            <p className="mt-1 font-semibold">
+                              {formatTimeRange(
+                                booking
+                              )}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-xs text-gray-400">
+                              Duration
+                            </p>
+
+                            <p className="mt-1 font-semibold">
+                              {formatDuration(
+                                booking
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex flex-col justify-between gap-4 border-t border-gray-100 pt-4 sm:flex-row sm:items-center">
+                          <div>
+                            <p className="text-xs text-gray-400">
+                              Total Price
+                            </p>
+
+                            <p className="mt-1 text-xl font-bold">
+                              {formatPrice(
+                                booking.totalPrice
+                              )}
+                            </p>
+                          </div>
+
+                          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setSelectedBooking(
+                                  booking
+                                )
+                              }
+                              className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold hover:bg-gray-100 sm:w-auto"
+                            >
+                              View Details
+                            </button>
+
+                            {booking.status ===
+                              "Pending" && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setCancelId(
+                                    booking.id
+                                  )
+                                }
+                                className="w-full rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 sm:w-auto"
+                              >
+                                Cancel Booking
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </article>
+                )
+              )
+            ) : (
+              <div className="rounded-xl border border-dashed border-gray-300 bg-white px-5 py-12 text-center">
+                <div className="mb-3 text-4xl">
+                  📅
                 </div>
+
+                <h3 className="text-lg font-bold">
+                  No bookings found
+                </h3>
+
+                <p className="mt-2 text-sm text-gray-500">
+                  {bookings.length === 0
+                    ? "You have not booked any studios yet."
+                    : "Try another search or status filter."}
+                </p>
+
+                <Link
+                  href="/studios"
+                  className="mt-5 inline-block rounded-lg bg-gray-900 px-5 py-3 text-sm font-semibold text-white hover:bg-gray-800"
+                >
+                  Explore Studios
+                </Link>
               </div>
-            ))
-          ) : (
-            /* Empty State */
-            <div className="rounded-xl border border-dashed border-gray-300 bg-white px-5 py-12 text-center">
-              <div className="mb-3 text-4xl">📅</div>
-
-              <h3 className="text-lg font-bold">
-                No bookings found
-              </h3>
-
-              <p className="mt-2 text-sm text-gray-500">
-                Try another search or explore studios to make a booking.
-              </p>
-
-              <Link
-                href="/studios"
-                className="mt-5 inline-block rounded-lg bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
-              >
-                Explore Studios
-              </Link>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Booking Details Modal */}
+      {/* BOOKING DETAILS MODAL */}
       {selectedBooking && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 px-3 py-5 sm:px-4"
-          onClick={() => setSelectedBooking(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 px-3 py-5"
+          onClick={() =>
+            setSelectedBooking(null)
+          }
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="booking-details-title"
-            className="my-auto max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-4 text-gray-900 shadow-xl sm:p-6"
-            onClick={(e) => e.stopPropagation()}
+            className="my-auto max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-6"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
-            {/* Modal Header */}
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
+              <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
                   Booking Details
                 </p>
 
                 <h2
                   id="booking-details-title"
-                  className="mt-1 break-words text-lg font-bold sm:text-xl"
+                  className="mt-1 text-xl font-bold"
                 >
                   {selectedBooking.studioName}
                 </h2>
@@ -488,105 +948,100 @@ export default function MyBookingsPage() {
 
               <button
                 type="button"
-                onClick={() => setSelectedBooking(null)}
-                className="shrink-0 rounded-lg px-3 py-1 text-xl text-gray-500 transition hover:bg-gray-100"
-                aria-label="Close booking details"
+                onClick={() =>
+                  setSelectedBooking(null)
+                }
+                aria-label="Close details"
+                className="rounded-lg px-3 py-1 text-xl text-gray-500 hover:bg-gray-100"
               >
                 ×
               </button>
             </div>
 
-            <img
+            <BookingImage
               src={selectedBooking.image}
               alt={selectedBooking.studioName}
-              className="mt-5 h-44 w-full rounded-xl object-cover sm:h-48"
+              className="mt-5 h-48 w-full rounded-xl"
             />
 
-            <p className="mt-4 text-sm leading-6 text-gray-600">
-              {selectedBooking.description}
-            </p>
+            {selectedBooking.description && (
+              <p className="mt-4 text-sm leading-6 text-gray-600">
+                {selectedBooking.description}
+              </p>
+            )}
 
-            {/* Booking Information */}
-            <div className="mt-5 space-y-3 rounded-xl bg-gray-50 p-3 text-sm sm:p-4">
-              <div className="flex justify-between gap-3">
-                <span className="text-gray-500">
-                  Booking ID
-                </span>
-
-                <span className="font-semibold">
-                  #{selectedBooking.id}
-                </span>
-              </div>
-
-              <div className="flex justify-between gap-3">
-                <span className="text-gray-500">
-                  Location
-                </span>
-
-                <span className="text-right font-semibold">
-                  {selectedBooking.location}
-                </span>
-              </div>
-
-              <div className="flex justify-between gap-3">
-                <span className="text-gray-500">
-                  Date
-                </span>
-
-                <span className="font-semibold">
-                  {formatDate(selectedBooking.date)}
-                </span>
-              </div>
-
-              <div className="flex justify-between gap-3">
-                <span className="text-gray-500">
-                  Time
-                </span>
-
-                <span className="text-right font-semibold">
-                  {selectedBooking.time}
-                </span>
-              </div>
-
-              <div className="flex justify-between gap-3">
-                <span className="text-gray-500">
-                  Duration
-                </span>
-
-                <span className="font-semibold">
-                  {selectedBooking.duration} Hours
-                </span>
-              </div>
-
-              <div className="flex justify-between gap-3">
-                <span className="text-gray-500">
-                  Status
-                </span>
-
-                <span
-                  className={`rounded-full px-2 py-1 text-xs font-semibold ${statusStyle(
-                    selectedBooking.status
-                  )}`}
+            <div className="mt-5 space-y-3 rounded-xl bg-gray-50 p-4 text-sm">
+              {[
+                [
+                  "Booking ID",
+                  selectedBooking.id,
+                ],
+                [
+                  "Location",
+                  selectedBooking.location,
+                ],
+                [
+                  "Date",
+                  formatDate(
+                    selectedBooking.startAt
+                  ),
+                ],
+                [
+                  "Time",
+                  formatTimeRange(
+                    selectedBooking
+                  ),
+                ],
+                [
+                  "Duration",
+                  formatDuration(
+                    selectedBooking
+                  ),
+                ],
+                [
+                  "Status",
+                  selectedBooking.status,
+                ],
+                [
+                  "Total Price",
+                  formatPrice(
+                    selectedBooking.totalPrice
+                  ),
+                ],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="flex justify-between gap-4 border-b border-gray-100 pb-2 last:border-0"
                 >
-                  {selectedBooking.status}
-                </span>
-              </div>
+                  <span className="shrink-0 text-gray-500">
+                    {label}
+                  </span>
 
-              <div className="flex justify-between gap-3 border-t border-gray-200 pt-3">
-                <span className="font-semibold">
-                  Total Price
-                </span>
-
-                <span className="text-lg font-bold">
-                  ৳{selectedBooking.price.toLocaleString("en-BD")}
-                </span>
-              </div>
+                  <span className="break-all text-right font-semibold">
+                    {value}
+                  </span>
+                </div>
+              ))}
             </div>
+
+            {selectedBooking.studioId &&
+              /^[a-f\d]{24}$/i.test(
+                selectedBooking.studioId
+              ) && (
+                <Link
+                  href={`/studios/${selectedBooking.studioId}`}
+                  className="mt-5 block rounded-lg border border-gray-300 py-3 text-center text-sm font-semibold hover:bg-gray-100"
+                >
+                  View Studio
+                </Link>
+              )}
 
             <button
               type="button"
-              onClick={() => setSelectedBooking(null)}
-              className="mt-5 w-full rounded-lg bg-gray-900 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+              onClick={() =>
+                setSelectedBooking(null)
+              }
+              className="mt-3 w-full rounded-lg bg-gray-900 py-3 text-sm font-semibold text-white hover:bg-gray-800"
             >
               Close
             </button>
@@ -594,10 +1049,10 @@ export default function MyBookingsPage() {
         </div>
       )}
 
-      {/* Cancel Confirmation Modal */}
+      {/* CANCEL CONFIRMATION MODAL */}
       {bookingToCancel && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-3 py-5 sm:px-4"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-3 py-5"
           onClick={closeCancelModal}
         >
           <div
@@ -606,12 +1061,13 @@ export default function MyBookingsPage() {
             aria-labelledby="cancel-booking-title"
             aria-describedby="cancel-booking-description"
             aria-busy={isCancelling}
-            className="w-full max-w-sm rounded-2xl bg-white p-5 text-gray-900 shadow-xl sm:p-6"
-            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl sm:p-6"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
-            {/* Warning Icon */}
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-2xl text-red-600">
-              <span aria-hidden="true">!</span>
+              !
             </div>
 
             <h2
@@ -625,41 +1081,43 @@ export default function MyBookingsPage() {
               id="cancel-booking-description"
               className="mt-2 text-sm leading-6 text-gray-500"
             >
-              Are you sure you want to cancel this studio booking?
-              Its status will change to Cancelled in this demo.
+              Are you sure you want to cancel
+              this booking? This action will
+              update its status in the database.
             </p>
 
-            {/* Booking Summary */}
             <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
-              <p className="text-sm font-bold text-gray-900">
+              <p className="text-sm font-bold">
                 {bookingToCancel.studioName}
               </p>
 
               <p className="mt-2 text-xs text-gray-500">
-                📅 {formatDate(bookingToCancel.date)}
+                📅{" "}
+                {formatDate(
+                  bookingToCancel.startAt
+                )}
               </p>
 
               <p className="mt-1 text-xs text-gray-500">
-                🕒 {bookingToCancel.time}
+                🕒{" "}
+                {formatTimeRange(
+                  bookingToCancel
+                )}
               </p>
 
-              <p className="mt-2 text-sm font-semibold text-gray-900">
-                ৳{bookingToCancel.price.toLocaleString("en-BD")}
+              <p className="mt-2 text-sm font-semibold">
+                {formatPrice(
+                  bookingToCancel.totalPrice
+                )}
               </p>
             </div>
 
-            <p className="mt-3 text-xs leading-5 text-gray-500">
-              Note: This is a frontend demonstration.
-              No real booking will be cancelled on the server.
-            </p>
-
-            {/* Modal Actions */}
-            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={closeCancelModal}
                 disabled={isCancelling}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold hover:bg-gray-100 disabled:opacity-50"
               >
                 Keep Booking
               </button>
@@ -668,19 +1126,11 @@ export default function MyBookingsPage() {
                 type="button"
                 onClick={handleCancel}
                 disabled={isCancelling}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+                className="flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-60"
               >
-                {isCancelling ? (
-                  <>
-                    <span
-                      aria-hidden="true"
-                      className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
-                    />
-                    <span>Cancelling...</span>
-                  </>
-                ) : (
-                  "Yes, Cancel"
-                )}
+                {isCancelling
+                  ? "Cancelling..."
+                  : "Yes, Cancel"}
               </button>
             </div>
           </div>

@@ -1,170 +1,151 @@
 
 @import "tailwindcss";
 
-/* Dark mode support */
+/* ========================================
+   TAILWIND CSS V4 - DARK MODE
+======================================== */
+
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Global */
-* {
+/* ========================================
+   GLOBAL RESET
+======================================== */
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background: #ffffff;
+  min-height: 100vh;
+
+  background-color: #ffffff;
   color: #0f172a;
+
   font-family: Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
 }
 
-/* =========================
-   DARK THEME
-========================= */
+/* ========================================
+   GLOBAL DARK THEME
+======================================== */
 
-.dark body {
-  background: #0f172a;
+html.dark body {
+  background-color: #09090f;
   color: #f8fafc;
 }
 
-/* Gray backgrounds */
-.dark .bg-white {
-  background-color: #1e293b !important;
+/* ========================================
+   FORM ELEMENTS
+======================================== */
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
 }
 
-.dark .bg-gray-50 {
-  background-color: #0f172a !important;
+input,
+textarea,
+select {
+  outline-offset: 2px;
 }
 
-.dark .bg-gray-100 {
-  background-color: #1e293b !important;
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
 }
 
-.dark .bg-gray-200 {
-  background-color: #334155 !important;
+button {
+  cursor: pointer;
 }
 
-/* Slate backgrounds */
-.dark .bg-slate-50 {
-  background-color: #0f172a !important;
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
-.dark .bg-slate-100 {
-  background-color: #1e293b !important;
+/* ========================================
+   ACCESSIBILITY
+======================================== */
+
+:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 3px;
 }
 
-.dark .bg-slate-200 {
-  background-color: #334155 !important;
+/* ========================================
+   SCROLLBAR - LIGHT THEME
+======================================== */
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 7px;
 }
 
-/* Text colors */
-.dark .text-gray-900,
-.dark .text-gray-800 {
-  color: #f8fafc !important;
+::-webkit-scrollbar-track {
+  background-color: #f1f5f9;
 }
 
-.dark .text-gray-700 {
-  color: #e2e8f0 !important;
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 20px;
 }
 
-.dark .text-gray-600 {
-  color: #cbd5e1 !important;
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }
 
-.dark .text-gray-500 {
-  color: #94a3b8 !important;
+/* ========================================
+   SCROLLBAR - DARK THEME
+======================================== */
+
+html.dark ::-webkit-scrollbar-track {
+  background-color: #0f172a;
 }
 
-.dark .text-slate-900 {
-  color: #f8fafc !important;
+html.dark ::-webkit-scrollbar-thumb {
+  background-color: #475569;
 }
 
-.dark .text-slate-800 {
-  color: #f1f5f9 !important;
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #64748b;
 }
 
-.dark .text-slate-700 {
-  color: #e2e8f0 !important;
+/* Firefox scrollbar support */
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
-.dark .text-slate-600 {
-  color: #cbd5e1 !important;
+html.dark {
+  scrollbar-color: #475569 #0f172a;
 }
 
-.dark .text-slate-500 {
-  color: #94a3b8 !important;
-}
+/* ========================================
+   SMOOTH THEME TRANSITIONS
+======================================== */
 
-/* Borders */
-.dark .border-gray-100,
-.dark .border-gray-200,
-.dark .border-slate-100,
-.dark .border-slate-200 {
-  border-color: #334155 !important;
-}
-
-.dark .border-gray-300,
-.dark .border-slate-300 {
-  border-color: #475569 !important;
-}
-
-/* Orange colors */
-.dark .bg-orange-50 {
-  background-color: #431407 !important;
-}
-
-.dark .bg-orange-100 {
-  background-color: #7c2d12 !important;
-}
-
-/* Form elements */
-.dark input,
-.dark textarea,
-.dark select {
-  background-color: #1e293b !important;
-  color: #f8fafc !important;
-  border-color: #475569 !important;
-}
-
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: #94a3b8 !important;
-}
-
-.dark option {
-  background-color: #1e293b;
-  color: #f8fafc;
-}
-
-/* Hover effects */
-.dark .hover\:bg-gray-100:hover,
-.dark .hover\:bg-slate-100:hover {
-  background-color: #334155 !important;
-}
-
-.dark .hover\:bg-orange-50:hover {
-  background-color: #7c2d12 !important;
-}
-
-/* Dividers */
-.dark hr {
-  border-color: #334155;
-}
-
-/* Shadows */
-.dark .shadow-sm,
-.dark .shadow-md,
-.dark .shadow-lg,
-.dark .shadow-xl {
-  --tw-shadow-color: rgb(0 0 0 / 0.25);
-}
-
-/* Smooth theme transition */
-body,
 header,
 main,
 footer,
@@ -174,13 +155,24 @@ input,
 textarea,
 select,
 button {
-  transition-property: background-color, border-color, color;
+  transition-property:
+    background-color,
+    border-color,
+    color,
+    box-shadow;
+
   transition-duration: 200ms;
+  transition-timing-function: ease;
 }
 
-/* =========================
+/* ========================================
    HERO SWIPER
-========================= */
+======================================== */
+
+.hero-swiper {
+  width: 100%;
+  overflow: hidden;
+}
 
 .hero-swiper .swiper-pagination {
   bottom: 15px !important;
@@ -189,13 +181,44 @@ button {
 .hero-swiper .swiper-pagination-bullet {
   width: 9px;
   height: 9px;
-  background: #f97316;
+
+  background-color: #f97316;
   opacity: 0.35;
-  transition: all 0.3s ease;
+
+  transition:
+    width 300ms ease,
+    opacity 300ms ease,
+    background-color 300ms ease;
 }
 
 .hero-swiper .swiper-pagination-bullet-active {
   width: 25px;
   border-radius: 20px;
   opacity: 1;
+}
+
+/* ========================================
+   HERO SWIPER - DARK MODE
+======================================== */
+
+html.dark .hero-swiper .swiper-pagination-bullet {
+  background-color: #fb923c;
+}
+
+html.dark .hero-swiper .swiper-pagination-bullet-active {
+  opacity: 1;
+}
+
+/* ========================================
+   REDUCED MOTION ACCESSIBILITY
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
