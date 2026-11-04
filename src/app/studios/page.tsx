@@ -1,21 +1,12 @@
-
 "use client";
 
-import {
-  Suspense,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-
 import {
   usePathname,
   useRouter,
   useSearchParams,
 } from "next/navigation";
-
 import { useTheme } from "next-themes";
 
 type Studio = {
@@ -30,12 +21,6 @@ type Studio = {
 type StudiosResponse = {
   success: boolean;
   studios: Studio[];
-  pagination?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
 };
 
 const categories = [
@@ -45,91 +30,56 @@ const categories = [
   "Podcast Rooms",
   "Music Suites",
   "Art Workshops",
+  "Creative Workspaces",
+  "Other Creative Spaces",
 ];
 
-const fallbackImage =
+const fallbackImages: Record<string, string> = {
+  "Photo Studio":
+    "https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=900&auto=format&fit=crop",
+  "Podcast Room":
+    "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=900&auto=format&fit=crop",
+  "Music Suite":
+    "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=900&auto=format&fit=crop",
+  "Art Workshop":
+    "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=900&auto=format&fit=crop",
+  "Sound Stage":
+    "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&auto=format&fit=crop",
+  "Creative Workspace":
+    "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop",
+  Other:
+    "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop",
+};
+
+const defaultImage =
   "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop";
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("en-BD").format(price);
 
+function getCategoryFallback(category: string) {
+  return fallbackImages[category] ?? defaultImage;
+}
+
 function StudiosPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
   const { resolvedTheme } = useTheme();
 
   const [mounted, setMounted] = useState(false);
   const [studios, setStudios] = useState<Studio[]>([]);
-  const [search, setSearch] = useState(
-    () => searchParams.get("search") ?? ""
-  );
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [retryCount, setRetryCount] = useState(0);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const isDark = mounted && resolvedTheme === "dark";
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const isDark = mounted && resolvedTheme === "dark";
-
-  const colors = {
-    page: isDark ? "#020617" : "#f8fafc",
-    card: isDark ? "#0f172a" : "#ffffff",
-    cardBorder: isDark ? "#334155" : "#e2e8f0",
-    heading: isDark ? "#f8fafc" : "#0f172a",
-    text: isDark ? "#cbd5e1" : "#475569",
-    muted: isDark ? "#94a3b8" : "#64748b",
-    input: isDark ? "#0f172a" : "#ffffff",
-    inputText: isDark ? "#f8fafc" : "#0f172a",
-    filter: isDark ? "#1e293b" : "#ffffff",
-    filterText: isDark ? "#e2e8f0" : "#475569",
-    divider: isDark ? "#334155" : "#f1f5f9",
-    badge: isDark ? "#431407" : "#fff7ed",
-    badgeBorder: isDark ? "#7c2d12" : "#fed7aa",
-  };
-
-  const categoryFromUrl = searchParams.get("category");
-
-  const selectedCategory =
-    categoryFromUrl &&
-    categories.includes(categoryFromUrl)
-      ? categoryFromUrl
-      : "All Studios";
-
-  const updateUrl = (
-    searchValue: string,
-    categoryValue: string
-  ) => {
-    const params = new URLSearchParams(
-      searchParams.toString()
-    );
-
-    const trimmedSearch = searchValue.trim();
-
-    if (trimmedSearch) {
-      params.set("search", trimmedSearch);
-    } else {
-      params.delete("search");
-    }
-
-    if (categoryValue === "All Studios") {
-      params.delete("category");
-    } else {
-      params.set("category", categoryValue);
-    }
-
-    const query = params.toString();
-
-    router.replace(
-      query ? `${pathname}?${query}` : pathname,
-      { scroll: false }
-    );
-  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -157,16 +107,10 @@ function StudiosPageContent() {
           throw new Error("Failed to load studios.");
         }
 
-        const data: StudiosResponse =
-          await response.json();
+        const data: StudiosResponse = await response.json();
 
-        if (
-          !data.success ||
-          !Array.isArray(data.studios)
-        ) {
-          throw new Error(
-            "Invalid studio API response."
-          );
+        if (!data.success || !Array.isArray(data.studios)) {
+          throw new Error("Invalid studio API response.");
         }
 
         setStudios(data.studios);
@@ -174,9 +118,7 @@ function StudiosPageContent() {
         if (controller.signal.aborted) return;
 
         setError(
-          err instanceof Error
-            ? err.message
-            : "Something went wrong."
+          err instanceof Error ? err.message : "Something went wrong."
         );
       } finally {
         if (!controller.signal.aborted) {
@@ -185,33 +127,47 @@ function StudiosPageContent() {
       }
     }
 
-    fetchStudios();
+    void fetchStudios();
 
     return () => controller.abort();
   }, [apiUrl, retryCount]);
 
-  const handleCategoryChange = (category: string) => {
-    updateUrl(search, category);
-  };
+  const categoryFromUrl = searchParams.get("category");
+  const selectedCategory =
+    categoryFromUrl && categories.includes(categoryFromUrl)
+      ? categoryFromUrl
+      : "All Studios";
 
-  const handleClearSearch = () => {
-    setSearch("");
-    updateUrl("", selectedCategory);
-  };
+  function updateUrl(searchValue: string, categoryValue: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    const trimmedSearch = searchValue.trim();
 
-  const clearFilters = () => {
-    setSearch("");
-    updateUrl("", "All Studios");
-  };
+    if (trimmedSearch) {
+      params.set("search", trimmedSearch);
+    } else {
+      params.delete("search");
+    }
+
+    if (categoryValue === "All Studios") {
+      params.delete("category");
+    } else {
+      params.set("category", categoryValue);
+    }
+
+    const query = params.toString();
+
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  }
 
   const filteredStudios = useMemo(() => {
     const searchText = search.toLowerCase().trim();
 
     return studios.filter((studio) => {
-      const categoryText =
-        studio.category.toLowerCase();
+      const categoryText = studio.category.toLowerCase();
 
-      const matchesCategory =
+      const categoryMatches =
         selectedCategory === "All Studios" ||
         studio.category === selectedCategory ||
         (selectedCategory === "Photo Studios" &&
@@ -223,180 +179,112 @@ function StudiosPageContent() {
         (selectedCategory === "Music Suites" &&
           categoryText === "music suite") ||
         (selectedCategory === "Art Workshops" &&
-          categoryText === "art workshop");
+          categoryText === "art workshop") ||
+        (selectedCategory === "Creative Workspaces" &&
+          categoryText === "creative workspace") ||
+        (selectedCategory === "Other Creative Spaces" &&
+          categoryText === "other");
 
-      const matchesSearch =
+      const searchMatches =
         studio.name.toLowerCase().includes(searchText) ||
         studio.location.toLowerCase().includes(searchText) ||
         categoryText.includes(searchText);
 
-      return matchesCategory && matchesSearch;
+      return categoryMatches && searchMatches;
     });
   }, [studios, search, selectedCategory]);
 
+  const pageBg = isDark
+    ? "bg-slate-950 text-slate-50"
+    : "bg-slate-50 text-slate-900";
+  const cardBg = isDark
+    ? "bg-slate-900 border-slate-700"
+    : "bg-white border-slate-200";
+  const mutedText = isDark ? "text-slate-400" : "text-slate-600";
+
   return (
-    <main
-      className="min-h-screen w-full overflow-x-hidden transition-colors duration-300"
-      style={{
-        backgroundColor: colors.page,
-        color: colors.heading,
-      }}
-    >
-      <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
-
-        {/* PAGE HEADING */}
-        <div className="mb-8 text-center sm:mb-10">
-          <div
-            className="mb-3 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-bold uppercase tracking-[1.5px] text-orange-500"
-            style={{
-              backgroundColor: colors.badge,
-              borderColor: colors.badgeBorder,
-            }}
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+    <main className={`min-h-screen w-full overflow-x-hidden ${pageBg}`}>
+      <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <header className="mb-8 text-center">
+          <p className="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-orange-600 dark:border-orange-900 dark:bg-orange-950">
             Discover Your Space
-          </div>
+          </p>
 
-          <h1
-            className="text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-[36px]"
-            style={{ color: colors.heading }}
-          >
-            Explore Creative{" "}
-            <span className="text-orange-500">
-              Studios
-            </span>
+          <h1 className="text-2xl font-extrabold sm:text-3xl lg:text-4xl">
+            Explore Creative <span className="text-orange-500">Studios</span>
           </h1>
 
-          <p
-            className="mx-auto mt-3 max-w-xl text-xs leading-6 sm:text-sm"
-            style={{ color: colors.text }}
-          >
-            Discover inspiring spaces for photography,
-            music, podcasting and your next creative project.
+          <p className={`mx-auto mt-3 max-w-xl text-sm leading-6 ${mutedText}`}>
+            Discover inspiring spaces for photography, music, podcasting and
+            your next creative project.
           </p>
-        </div>
+        </header>
 
-        {/* SEARCH BAR */}
-        <div className="mx-auto mb-6 max-w-2xl">
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              updateUrl(search, selectedCategory);
-            }}
-            className="flex items-center gap-3 rounded-2xl border px-4 shadow-sm transition-colors focus-within:border-orange-500"
-            style={{
-              backgroundColor: colors.input,
-              borderColor: colors.cardBorder,
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="19"
-              height="19"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="shrink-0 text-slate-400"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            updateUrl(search, selectedCategory);
+          }}
+          className={`mx-auto mb-6 flex max-w-2xl items-center gap-3 rounded-2xl border px-4 shadow-sm focus-within:border-orange-500 ${cardBg}`}
+        >
+          <span aria-hidden="true" className="text-slate-400">
+            ⌕
+          </span>
 
-            <input
-              type="search"
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Search by studio name, category or location..."
-              aria-label="Search studios"
-              className="w-full min-w-0 bg-transparent py-3.5 text-sm outline-none placeholder:text-slate-400"
-              style={{
-                color: colors.inputText,
-                backgroundColor: "transparent",
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search by studio name, category or location..."
+            aria-label="Search studios"
+            className="w-full min-w-0 bg-transparent py-3.5 text-sm outline-none placeholder:text-slate-400"
+          />
+
+          {search && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                updateUrl("", selectedCategory);
               }}
-            />
+              className="text-xs font-semibold text-orange-500"
+            >
+              Clear
+            </button>
+          )}
+        </form>
 
-            {search && (
+        <div className="mb-8 flex gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:justify-center">
+          {categories.map((category) => {
+            const active = selectedCategory === category;
+
+            return (
               <button
+                key={category}
                 type="button"
-                onClick={handleClearSearch}
-                aria-label="Clear search"
-                className="shrink-0 text-xs font-semibold text-orange-500 hover:text-orange-600"
+                onClick={() => updateUrl(search, category)}
+                aria-pressed={active}
+                className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold ${
+                  active
+                    ? "border-orange-500 bg-orange-500 text-white"
+                    : `${cardBg} hover:border-orange-400 hover:text-orange-500`
+                }`}
               >
-                Clear
+                {category}
               </button>
-            )}
-          </form>
+            );
+          })}
         </div>
 
-        {/* CATEGORY FILTER */}
-        <div className="mb-8">
-          <div className="flex gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0">
-            {categories.map((category) => {
-              const active =
-                selectedCategory === category;
-
-              return (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() =>
-                    handleCategoryChange(category)
-                  }
-                  aria-pressed={active}
-                  className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold transition-all duration-200 sm:px-5 ${
-                    active
-                      ? "border-orange-500 bg-orange-500 text-white shadow-sm"
-                      : "hover:border-orange-400 hover:text-orange-500"
-                  }`}
-                  style={
-                    active
-                      ? undefined
-                      : {
-                          backgroundColor: colors.filter,
-                          borderColor: colors.cardBorder,
-                          color: colors.filterText,
-                        }
-                  }
-                >
-                  {category}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* RESULTS HEADER */}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2
-              className="text-base font-bold sm:text-lg"
-              style={{ color: colors.heading }}
-            >
-              Available Studios
-            </h2>
-
-            <p
-              className="mt-1 text-xs"
-              style={{ color: colors.muted }}
-            >
+            <h2 className="text-lg font-bold">Available Studios</h2>
+            <p className={`mt-1 text-xs ${mutedText}`}>
               Find the perfect place for your next project
             </p>
           </div>
 
-          <span
-            className="rounded-full border px-3 py-1.5 text-xs font-medium"
-            style={{
-              backgroundColor: colors.card,
-              borderColor: colors.cardBorder,
-              color: colors.text,
-            }}
-          >
+          <span className={`rounded-full border px-3 py-1.5 text-xs ${cardBg}`}>
             {loading
               ? "Loading..."
               : error
@@ -405,189 +293,109 @@ function StudiosPageContent() {
           </span>
         </div>
 
-        {/* LOADING STATE */}
         {loading ? (
-          <div
-            className="rounded-2xl border px-5 py-16 text-center shadow-sm"
-            style={{
-              backgroundColor: colors.card,
-              borderColor: colors.cardBorder,
-            }}
-          >
+          <div className={`rounded-2xl border px-5 py-16 text-center ${cardBg}`}>
             <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-[3px] border-orange-100 border-t-orange-500" />
-
-            <p
-              className="text-sm font-medium"
-              style={{ color: colors.text }}
-            >
+            <p className={`text-sm ${mutedText}`}>
               Loading studios from database...
-            </p>
-
-            <p
-              className="mt-2 text-xs"
-              style={{ color: colors.muted }}
-            >
-              Please wait while we find your spaces
             </p>
           </div>
         ) : error ? (
-          /* ERROR STATE */
-          <div
-            className="rounded-2xl border px-5 py-14 text-center shadow-sm"
-            style={{
-              backgroundColor: colors.card,
-              borderColor: colors.cardBorder,
-            }}
-          >
-            <h2
-              className="text-lg font-bold"
-              style={{ color: colors.heading }}
-            >
-              Unable to Load Studios
-            </h2>
-
-            <p className="mt-2 text-sm text-red-500">
-              {error}
-            </p>
+          <div className={`rounded-2xl border px-5 py-14 text-center ${cardBg}`}>
+            <h2 className="text-lg font-bold">Unable to Load Studios</h2>
+            <p className="mt-2 text-sm text-red-500">{error}</p>
 
             <button
               type="button"
-              onClick={() =>
-                setRetryCount((count) => count + 1)
-              }
-              className="mt-5 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+              onClick={() => setRetryCount((count) => count + 1)}
+              className="mt-5 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white"
             >
               Try Again
             </button>
           </div>
         ) : filteredStudios.length > 0 ? (
-          /* STUDIO CARDS */
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:gap-6">
-            {filteredStudios.map((studio) => (
-              <article
-                key={studio._id}
-                className="group min-w-0 overflow-hidden rounded-2xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-                style={{
-                  backgroundColor: colors.card,
-                  borderColor: colors.cardBorder,
-                }}
-              >
-                {/* IMAGE */}
-                <div
-                  className="relative h-44 overflow-hidden sm:h-44 lg:h-48"
-                  style={{
-                    backgroundColor: colors.filter,
-                  }}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
+            {filteredStudios.map((studio) => {
+              const savedImage = studio.images?.find(
+                (image) =>
+                  typeof image === "string" && image.trim().length > 0
+              );
+
+              const image =
+                savedImage || getCategoryFallback(studio.category);
+
+              return (
+                <article
+                  key={studio._id}
+                  className={`group min-w-0 overflow-hidden rounded-2xl border shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${cardBg}`}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={
-                      studio.images?.[0] ||
-                      fallbackImage
-                    }
-                    alt={studio.name}
-                    loading="lazy"
-                    onError={(event) => {
-                      const image = event.currentTarget;
+                  <div className="relative h-44 overflow-hidden bg-slate-200 sm:h-44 lg:h-48">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={image}
+                      alt={studio.name}
+                      loading="lazy"
+                      onError={(event) => {
+                        const fallback = getCategoryFallback(studio.category);
 
-                      if (image.src !== fallbackImage) {
-                        image.src = fallbackImage;
-                      }
-                    }}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                        if (event.currentTarget.src !== fallback) {
+                          event.currentTarget.src = fallback;
+                        }
+                      }}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
 
-                  <span
-                    className="absolute left-3 top-3 max-w-[85%] truncate rounded-full border px-3 py-1.5 text-[10px] font-bold text-orange-500 shadow-sm"
-                    style={{
-                      backgroundColor: colors.card,
-                      borderColor: colors.cardBorder,
-                    }}
-                  >
-                    {studio.category}
-                  </span>
-                </div>
+                    <span
+                      className={`absolute left-3 top-3 max-w-[85%] truncate rounded-full border px-3 py-1.5 text-[10px] font-bold text-orange-500 shadow-sm ${cardBg}`}
+                    >
+                      {studio.category}
+                    </span>
+                  </div>
 
-                {/* CARD CONTENT */}
-                <div className="p-4">
-                  <p
-                    className="mb-2 truncate text-xs"
-                    style={{ color: colors.muted }}
-                  >
-                    📍 {studio.location}
-                  </p>
+                  <div className="p-4">
+                    <p className={`mb-2 truncate text-xs ${mutedText}`}>
+                      📍 {studio.location}
+                    </p>
 
-                  <h3
-                    className="mb-4 line-clamp-1 text-base font-bold"
-                    style={{ color: colors.heading }}
-                  >
-                    {studio.name}
-                  </h3>
+                    <h3 className="mb-4 line-clamp-1 text-base font-bold">
+                      {studio.name}
+                    </h3>
 
-                  <div
-                    className="flex flex-wrap items-center justify-between gap-3 border-t pt-3"
-                    style={{
-                      borderColor: colors.divider,
-                    }}
-                  >
-                    <div>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3 dark:border-slate-700">
                       <p className="text-base font-extrabold text-orange-500">
                         ৳{formatPrice(studio.price)}
-
-                        <span
-                          className="ml-1 text-[11px] font-normal"
-                          style={{
-                            color: colors.muted,
-                          }}
-                        >
+                        <span className={`ml-1 text-[11px] font-normal ${mutedText}`}>
                           /hour
                         </span>
                       </p>
-                    </div>
 
-                    <Link
-                      href={`/studios/${studio._id}`}
-                      className="inline-flex items-center justify-center rounded-lg bg-orange-500 px-3.5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-orange-600"
-                    >
-                      View Details
-                      <span className="ml-1.5">→</span>
-                    </Link>
+                      <Link
+                        href={`/studios/${studio._id}`}
+                        className="inline-flex items-center justify-center rounded-lg bg-orange-500 px-3.5 py-2.5 text-xs font-semibold text-white hover:bg-orange-600"
+                      >
+                        View Details →
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         ) : (
-          /* EMPTY STATE */
-          <div
-            className="rounded-2xl border px-5 py-14 text-center shadow-sm"
-            style={{
-              backgroundColor: colors.card,
-              borderColor: colors.cardBorder,
-            }}
-          >
-            <div className="mb-3 text-3xl">
-              🔍
-            </div>
-
-            <h2
-              className="text-lg font-bold"
-              style={{ color: colors.heading }}
-            >
-              No Studios Found
-            </h2>
-
-            <p
-              className="mt-2 text-sm"
-              style={{ color: colors.muted }}
-            >
-              Try searching with another name or category.
+          <div className={`rounded-2xl border px-5 py-14 text-center ${cardBg}`}>
+            <div className="mb-3 text-3xl">🔍</div>
+            <h2 className="text-lg font-bold">No Studios Found</h2>
+            <p className={`mt-2 text-sm ${mutedText}`}>
+              Try another search or category.
             </p>
 
             <button
               type="button"
-              onClick={clearFilters}
-              className="mt-5 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+              onClick={() => {
+                setSearch("");
+                updateUrl("", "All Studios");
+              }}
+              className="mt-5 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white"
             >
               Clear Filters
             </button>

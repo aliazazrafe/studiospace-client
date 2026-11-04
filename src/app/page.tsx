@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import HeroSlider from "../components/HeroSlider";
 
@@ -34,7 +33,6 @@ const fallbackImages: Record<string, string> = {
 const defaultImage =
   "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop";
 
-// Fetch featured studios from MongoDB
 async function getFeaturedStudios(): Promise<Studio[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -50,10 +48,7 @@ async function getFeaturedStudios(): Promise<Studio[]> {
     );
 
     if (!response.ok) {
-      console.error(
-        "Failed to load featured studios:",
-        response.status
-      );
+      console.error("Failed to load featured studios:", response.status);
       return [];
     }
 
@@ -115,7 +110,7 @@ const categories = [
   {
     title: "Other Creative Spaces",
     subtitle: "Discover More Spaces",
-    route: "All Studios",
+    route: "Other Creative Spaces",
     image:
       "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop",
   },
@@ -208,24 +203,20 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-white text-gray-900 transition-colors duration-300 dark:bg-[#09090f] dark:text-white">
-
       {/* HERO SLIDER */}
       <HeroSlider />
 
       {/* FEATURED STUDIOS */}
       <section className="px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <div className="mx-auto max-w-7xl">
-
           <div className="mb-9 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-orange-500">
                 Explore Our Collection
               </p>
-
               <h2 className="mt-2 text-2xl font-bold sm:text-3xl">
                 Featured Studios
               </h2>
-
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                 Discover amazing creative spaces for your next project.
               </p>
@@ -244,11 +235,9 @@ export default async function Home() {
               <h3 className="text-lg font-bold">
                 Featured studios are currently unavailable
               </h3>
-
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                 Please try again later or explore all studios.
               </p>
-
               <Link
                 href="/studios"
                 className="mt-5 inline-block rounded-lg bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
@@ -262,8 +251,7 @@ export default async function Home() {
                 const image =
                   studio.images?.find(
                     (item) =>
-                      typeof item === "string" &&
-                      item.trim().length > 0
+                      typeof item === "string" && item.trim().length > 0
                   ) ||
                   fallbackImages[studio.category] ||
                   defaultImage;
@@ -281,7 +269,6 @@ export default async function Home() {
                         loading="lazy"
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
-
                       <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-gray-900">
                         {studio.category}
                       </span>
@@ -292,7 +279,6 @@ export default async function Home() {
                         <div className="mb-2 text-sm font-semibold">
                           <span className="text-yellow-500">★ </span>
                           {studio.rating.toFixed(1)}
-
                           {typeof studio.reviews === "number" && (
                             <span className="ml-1 font-normal text-gray-500 dark:text-gray-400">
                               ({studio.reviews} reviews)
@@ -325,7 +311,6 @@ export default async function Home() {
                         </Link>
                       </div>
 
-                      {/* BOOK NOW BUTTON */}
                       <Link
                         href={`/studios/${studio._id}`}
                         className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-orange-600"
@@ -356,19 +341,16 @@ export default async function Home() {
         className="bg-gray-50 px-4 py-14 sm:px-6 lg:px-8 lg:py-20 dark:bg-[#101018]"
       >
         <div className="mx-auto max-w-7xl">
-
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-orange-500">
               Simple Booking Process
             </p>
-
             <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
               How StudioSpace Works
             </h2>
-
             <p className="mt-3 text-sm leading-7 text-gray-600 dark:text-gray-400">
-              Finding and booking your perfect creative space is easier
-              than ever. Follow these four simple steps to start creating.
+              Finding and booking your perfect creative space is easier than
+              ever. Follow these four simple steps to start creating.
             </p>
           </div>
 
@@ -381,15 +363,10 @@ export default async function Home() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-900 text-3xl dark:bg-[#292936]">
                   {step.icon}
                 </div>
-
                 <span className="mt-5 inline-block rounded-full bg-gray-100 px-4 py-1.5 text-xs font-bold text-gray-700 dark:bg-[#292936] dark:text-gray-300">
                   {step.number}
                 </span>
-
-                <h3 className="mt-4 text-base font-bold">
-                  {step.title}
-                </h3>
-
+                <h3 className="mt-4 text-base font-bold">{step.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400">
                   {step.description}
                 </p>
@@ -411,20 +388,17 @@ export default async function Home() {
       {/* CATEGORIES */}
       <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
-
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-orange-500">
                 Explore Your Creativity
               </p>
-
               <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
                 Browse by Category
               </h2>
-
               <p className="mt-2 max-w-xl text-sm leading-7 text-gray-600 dark:text-gray-400">
-                Find the perfect creative space for photography,
-                music, podcasting and more.
+                Find the perfect creative space for photography, music,
+                podcasting and more.
               </p>
             </div>
 
@@ -440,9 +414,7 @@ export default async function Home() {
             {categories.map((category) => (
               <Link
                 key={category.title}
-                href={`/studios?category=${encodeURIComponent(
-                  category.route
-                )}`}
+                href={`/studios?category=${encodeURIComponent(category.route)}`}
                 className="group relative h-56 overflow-hidden rounded-2xl sm:h-64 lg:h-72"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -452,18 +424,12 @@ export default async function Home() {
                   loading="lazy"
                   className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
                 />
-
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-
                 <div className="absolute bottom-0 left-0 p-6">
-                  <p className="text-xs text-gray-200">
-                    {category.subtitle}
-                  </p>
-
+                  <p className="text-xs text-gray-200">{category.subtitle}</p>
                   <h3 className="mt-2 text-xl font-bold text-white">
                     {category.title}
                   </h3>
-
                   <p className="mt-3 text-xs font-semibold text-orange-300">
                     Explore Studios →
                   </p>
@@ -480,20 +446,17 @@ export default async function Home() {
         className="bg-gray-50 px-4 py-14 sm:px-6 lg:px-8 lg:py-20 dark:bg-[#101018]"
       >
         <div className="mx-auto max-w-7xl">
-
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-orange-500">
               Creator Confidence
             </p>
-
             <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
               Host Guarantee & Creator Support
             </h2>
-
             <p className="mt-3 text-sm leading-7 text-gray-600 dark:text-gray-400">
-              Discover important safety information, host details,
-              equipment guidelines and support resources to help
-              you plan your next creative project with confidence.
+              Discover important safety information, host details, equipment
+              guidelines and support resources to help you plan your next
+              creative project with confidence.
             </p>
           </div>
 
@@ -506,11 +469,7 @@ export default async function Home() {
                 <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gray-900 text-2xl transition group-hover:bg-orange-500 dark:bg-[#292936]">
                   {feature.icon}
                 </div>
-
-                <h3 className="mt-5 text-base font-bold">
-                  {feature.title}
-                </h3>
-
+                <h3 className="mt-5 text-base font-bold">{feature.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-400">
                   {feature.description}
                 </p>
@@ -519,10 +478,10 @@ export default async function Home() {
           </div>
 
           <p className="mx-auto mt-10 max-w-2xl text-center text-xs leading-6 text-gray-500 dark:text-gray-400">
-            StudioSpace encourages transparent communication and
-            responsible studio usage. Specific protection,
-            verification and support arrangements depend on
-            available platform features and individual studio policies.
+            StudioSpace encourages transparent communication and responsible
+            studio usage. Specific protection, verification and support
+            arrangements depend on available platform features and individual
+            studio policies.
           </p>
         </div>
       </section>
@@ -530,21 +489,18 @@ export default async function Home() {
       {/* BECOME A HOST */}
       <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
-
           <div className="grid items-center gap-10 overflow-hidden rounded-3xl bg-gray-900 p-6 text-white sm:p-10 lg:grid-cols-2 lg:p-14 dark:bg-[#191923]">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-orange-400">
                 Grow With StudioSpace
               </p>
-
               <h2 className="mt-4 text-2xl font-bold leading-tight sm:text-3xl lg:text-4xl">
                 Turn Your Creative Space Into an Opportunity
               </h2>
-
               <p className="mt-5 text-sm leading-7 text-gray-300">
-                Have a photography studio, podcast room, music space
-                or creative workspace? List your space on StudioSpace
-                and connect with creators looking for the perfect place.
+                Have a photography studio, podcast room, music space or creative
+                workspace? List your space on StudioSpace and connect with
+                creators looking for the perfect place.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-4">
@@ -554,7 +510,6 @@ export default async function Home() {
                 >
                   List Your Studio →
                 </Link>
-
                 <Link
                   href="/about"
                   className="rounded-lg border border-gray-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-gray-900"
@@ -566,16 +521,11 @@ export default async function Home() {
               <div className="mt-9 grid grid-cols-2 gap-5 border-t border-gray-700 pt-7">
                 <div>
                   <h3 className="text-xl font-bold">Easy</h3>
-                  <p className="mt-1 text-xs text-gray-400">
-                    Listing Process
-                  </p>
+                  <p className="mt-1 text-xs text-gray-400">Listing Process</p>
                 </div>
-
                 <div>
                   <h3 className="text-xl font-bold">Flexible</h3>
-                  <p className="mt-1 text-xs text-gray-400">
-                    Space Management
-                  </p>
+                  <p className="mt-1 text-xs text-gray-400">Space Management</p>
                 </div>
               </div>
             </div>
@@ -596,19 +546,16 @@ export default async function Home() {
       {/* TESTIMONIALS */}
       <section className="bg-gray-50 px-4 py-14 sm:px-6 lg:px-8 lg:py-20 dark:bg-[#101018]">
         <div className="mx-auto max-w-7xl">
-
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-orange-500">
               Community Feedback
             </p>
-
             <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
               What People Say
             </h2>
-
             <p className="mt-3 text-sm leading-7 text-gray-600 dark:text-gray-400">
-              Discover what creators and studio owners think
-              about their StudioSpace experience.
+              Discover what creators and studio owners think about their
+              StudioSpace experience.
             </p>
           </div>
 
@@ -621,7 +568,6 @@ export default async function Home() {
                 <div className="text-xl tracking-widest text-yellow-500">
                   ★★★★★
                 </div>
-
                 <p className="mt-5 text-sm leading-7 text-gray-600 dark:text-gray-300">
                   &quot;{testimonial.review}&quot;
                 </p>
@@ -630,12 +576,8 @@ export default async function Home() {
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white dark:bg-orange-500">
                     {testimonial.initials}
                   </div>
-
                   <div>
-                    <h3 className="text-sm font-bold">
-                      {testimonial.name}
-                    </h3>
-
+                    <h3 className="text-sm font-bold">{testimonial.name}</h3>
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       {testimonial.role}
                     </p>
@@ -650,7 +592,6 @@ export default async function Home() {
           </p>
         </div>
       </section>
-
     </main>
   );
 }
