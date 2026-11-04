@@ -1,13 +1,17 @@
-
 import type { NextConfig } from "next";
+
+
+const BACKEND_URL = (
+  process.env.BACKEND_URL ||
+  "https://studiospace-server-ipdq.onrender.com"
+).replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/api/auth/:path*",
-        destination:
-          "https://studiospace-server-ipdq.onrender.com/api/auth/:path*",
+        source: "/api/:path*",
+        destination: `${BACKEND_URL}/api/:path*`,
       },
     ];
   },
