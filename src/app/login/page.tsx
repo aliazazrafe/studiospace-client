@@ -1,4 +1,4 @@
-
+﻿
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -118,6 +118,57 @@ export default function LoginPage() {
       setMessage(errorMessage);
       toast.error(errorMessage);
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/auth/sign-in/social`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            provider: "google",
+            callbackURL: window.location.origin + "/",
+            errorCallbackURL: window.location.origin + "/login",
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.url) {
+        throw new Error(data.message || "Google Sign-In failed.");
+      }
+
+      const redirectURL = new URL(data.url);
+
+      if (
+        redirectURL.protocol !== "https:" ||
+        redirectURL.hostname !== "accounts.google.com"
+      ) {
+        throw new Error("Unexpected Google redirect URL.");
+      }
+
+      window.location.assign(redirectURL.toString());
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Google Sign-In failed.";
+
+      setMessage(errorMessage);
+      toast.error(errorMessage);
       setIsLoading(false);
     }
   };
@@ -359,9 +410,8 @@ export default function LoginPage() {
             {/* Google Login - Not Configured */}
             <button
               type="button"
-              disabled
-              title="Google Sign-In is not configured yet."
-              className="flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-500 opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+              onClick={handleGoogleSignIn}
+              className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:border-orange-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
             >
               <svg
                 width="20"
@@ -387,7 +437,7 @@ export default function LoginPage() {
                 />
               </svg>
 
-              Google Sign-In (Coming Soon)
+              Continue with Google
             </button>
 
             {/* Register Link */}
@@ -415,3 +465,4 @@ export default function LoginPage() {
     </main>
   );
 }
+

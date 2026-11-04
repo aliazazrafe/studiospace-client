@@ -1,450 +1,445 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import type { FormEvent } from "react";
+import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-type BookingModalProps = {
-  studioId: string;
-  studioName: string;
-  hourlyRate: number;
-  securityDeposit?: number;
-};
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
 
-type BookingResponse = {
-  success?: boolean;
+const inputClass =
+  "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:ring-orange-500/20";
+
+type AuthResponse = {
   message?: string;
+  error?: { message?: string };
+  url?: string;
+  redirect?: boolean;
 };
 
-function getLocalDate() {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-function calculateMinutes(time: string) {
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 60 + minutes;
-}
-
-function createBookingDateTime(date: string, time: string) {
-  const [year, month, day] = date.split("-").map(Number);
-  const [hours, minutes] = time.split(":").map(Number);
-
-  return new Date(year, month - 1, day, hours, minutes, 0, 0);
-}
-
-export default function BookingModal({
-  studioId,
-  studioName,
-  hourlyRate,
-  securityDeposit,
-}: BookingModalProps) {
+export default function LoginPage() {
   const router = useRouter();
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [date, setDate] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [today, setToday] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    if (!isOpen || isSubmitting) return;
+  const busy = isLoading || isGoogleLoading;
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isOpen, isSubmitting]);
-
-  const durationMinutes =
-    startTime && endTime
-      ? calculateMinutes(endTime) - calculateMinutes(startTime)
-      : 0;
-
-  const totalHours =
-    durationMinutes > 0 ? durationMinutes / 60 : 0;
-
-  const rentalPrice = totalHours * hourlyRate;
-
-  const deposit =
-    typeof securityDeposit === "number"
-      ? securityDeposit
-      : 0;
-
-  const estimatedTotal = rentalPrice + deposit;
-
-  const openModal = () => {
-    setDate("");
-    setStartTime("");
-    setEndTime("");
-    setToday(getLocalDate());
-    setIsOpen(true);
-  };
-
-  const closeModal = () => {
-    if (!isSubmitting) {
-      setIsOpen(false);
-    }
-  };
-
-  const handleBooking = async (
-    event: FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (isSubmitting) return;
+    if (busy) return;
 
-    if (!date || !startTime || !endTime) {
-      toast.error("Please fill in all booking details.");
+    setMessage("");
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanEmail || !password) {
+      toast.error("Please enter your email and password.");
       return;
     }
 
-    if (date < getLocalDate()) {
-      toast.error("Please select a valid booking date.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      toast.error("Please enter a valid email address.");
       return;
     }
 
-    if (durationMinutes <= 0) {
-      toast.error("End time must be after start time.");
-      return;
-    }
-
-    const startDate = createBookingDateTime(date, startTime);
-    const endDate = createBookingDateTime(date, endTime);
-
-    if (
-      Number.isNaN(startDate.getTime()) ||
-      Number.isNaN(endDate.getTime())
-    ) {
-      toast.error("Invalid booking date or time.");
-      return;
-    }
-
-    if (startDate <= new Date()) {
-      toast.error("Please select a future start time.");
-      return;
-    }
-
-    if (endDate <= startDate) {
-      toast.error("End time must be after start time.");
-      return;
-    }
-
-    if (!studioId) {
-      toast.error("Studio ID is missing.");
-      return;
-    }
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-    if (!apiUrl) {
-      toast.error("Backend API URL is not configured.");
-      return;
-    }
-
-    setIsSubmitting(true);
+    setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `${apiUrl.replace(/\/$/, "")}/api/bookings`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            studioId,
-            startAt: startDate.toISOString(),
-            endAt: endDate.toISOString(),
-          }),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/auth/sign-in/email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          email: cleanEmail,
+          password,
+          rememberMe,
+        }),
+      });
 
-      const data: BookingResponse = await response.json();
+      const data: AuthResponse = await response.json().catch(() => ({}));
 
-      if (!response.ok || data.success !== true) {
-        if (response.status === 401) {
-          throw new Error(
-            "Please login before booking a studio."
-          );
-        }
-
-        if (response.status === 409) {
-          throw new Error(
-            "This studio is already booked for the selected time."
-          );
-        }
-
+      if (!response.ok) {
         throw new Error(
-          data.message || "Failed to create booking."
+          data.message || data.error?.message || "Invalid email or password."
         );
       }
 
-      toast.success(
-        data.message || "Booking created successfully!"
+      const sessionResponse = await fetch(
+        `${API_URL}/api/auth/get-session`,
+        {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        }
       );
 
-      setIsOpen(false);
-      setDate("");
-      setStartTime("");
-      setEndTime("");
+      if (!sessionResponse.ok) {
+        throw new Error("Login succeeded, but session verification failed.");
+      }
 
-      router.push("/my-bookings");
+      const session = await sessionResponse.json();
+
+      if (!session?.user) {
+        throw new Error(
+          "Login succeeded, but no active session was found. Please check authentication cookie settings."
+        );
+      }
+
+      toast.success("Login successful!");
+      router.replace("/");
       router.refresh();
     } catch (error) {
-      const message =
+      const errorMessage =
         error instanceof Error
           ? error.message
-          : "Something went wrong. Please try again.";
+          : "Cannot connect to the authentication server.";
 
-      toast.error(message);
+      setMessage(errorMessage);
+      toast.error(errorMessage);
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (busy) return;
+
+    setMessage("");
+    setIsGoogleLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/sign-in/social`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          provider: "google",
+          callbackURL: window.location.origin + "/",
+          errorCallbackURL: window.location.origin + "/login",
+        }),
+      });
+
+      const data: AuthResponse = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.error?.message ||
+            "Unable to start Google Sign-In."
+        );
+      }
+
+      if (!data.url) {
+        throw new Error("Google Sign-In redirect URL was not returned.");
+      }
+
+      const redirectURL = new URL(data.url);
+      const allowedHosts = [
+        "accounts.google.com",
+        new URL(API_URL).hostname,
+      ];
+
+      if (
+        redirectURL.protocol !== "https:" &&
+        !(redirectURL.protocol === "http:" && redirectURL.hostname === "localhost")
+      ) {
+        throw new Error("Invalid Google Sign-In redirect URL.");
+      }
+
+      if (!allowedHosts.includes(redirectURL.hostname)) {
+        throw new Error("Unexpected Google Sign-In redirect destination.");
+      }
+
+      window.location.assign(redirectURL.toString());
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Google Sign-In failed. Please try again.";
+
+      setMessage(errorMessage);
+      toast.error(errorMessage);
+      setIsGoogleLoading(false);
     }
   };
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={openModal}
-        className="mt-5 block w-full rounded-xl bg-orange-500 py-3.5 text-center text-sm font-bold text-white shadow-sm transition hover:bg-orange-600"
-      >
-        Book Workspace Now →
-      </button>
+    <main className="flex min-h-screen items-center justify-center bg-gray-50 px-3 py-6 text-gray-900 transition-colors dark:bg-gray-950 dark:text-gray-100 sm:px-5 sm:py-10">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900 md:grid-cols-2">
+        {/* Left Image */}
+        <div className="relative hidden min-h-[650px] md:block">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200"
+            alt="Creative studio workspace"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
 
-      <p className="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
-        Choose your preferred booking date and time.
-      </p>
+          <div className="absolute inset-0 bg-black/60" />
 
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/70 px-4 py-6 backdrop-blur-sm"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              closeModal();
-            }
-          }}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="booking-modal-title"
-            aria-busy={isSubmitting}
-            className="my-auto w-full max-w-lg rounded-2xl bg-white p-5 text-slate-900 shadow-2xl dark:bg-slate-900 dark:text-white sm:p-7"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-orange-500">
-                  Studio Reservation
-                </p>
+          <div className="relative z-10 flex h-full flex-col justify-between p-8 text-white lg:p-10">
+            <Link
+              href="/"
+              className="text-2xl font-bold tracking-tight transition hover:opacity-80"
+            >
+              StudioSpace
+              <span className="text-orange-400">.</span>
+            </Link>
 
-                <h2
-                  id="booking-modal-title"
-                  className="mt-2 text-xl font-bold sm:text-2xl"
-                >
-                  Book Your Studio
-                </h2>
+            <div>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-orange-300">
+                Create Something Amazing
+              </p>
 
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                  {studioName}
-                </p>
-              </div>
+              <h1 className="text-3xl font-bold leading-tight lg:text-4xl">
+                Find Your Space.
+                <br />
+                Create Your Story.
+              </h1>
 
-              <button
-                type="button"
-                onClick={closeModal}
-                disabled={isSubmitting}
-                aria-label="Close booking modal"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg text-slate-600 transition hover:bg-orange-100 hover:text-orange-600 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-300"
-              >
-                ✕
-              </button>
+              <p className="mt-5 max-w-sm text-sm leading-7 text-gray-200">
+                Discover inspiring creative spaces and bring your ideas to life
+                with StudioSpace.
+              </p>
             </div>
 
-            <form
-              onSubmit={handleBooking}
-              className="mt-6 space-y-4"
+            <p className="text-xs text-gray-300">
+              © 2026 StudioSpace. All rights reserved.
+            </p>
+          </div>
+        </div>
+
+        {/* Right Login Form */}
+        <div className="flex items-center justify-center px-4 py-8 sm:px-8 sm:py-10 lg:px-12">
+          <div className="w-full max-w-md">
+            <Link
+              href="/"
+              className="mb-6 inline-block text-2xl font-bold md:hidden"
             >
+              StudioSpace
+              <span className="text-orange-500">.</span>
+            </Link>
+
+            <div className="mb-7">
+              <Link
+                href="/"
+                className="group inline-flex items-center gap-2 rounded-lg text-sm font-medium text-gray-500 transition hover:text-orange-500 dark:text-gray-400 dark:hover:text-orange-400"
+              >
+                <span className="text-lg transition-transform group-hover:-translate-x-1">
+                  ←
+                </span>
+                Back to Home
+              </Link>
+            </div>
+
+            <div className="mb-7">
+              <p className="text-xs font-semibold uppercase tracking-widest text-orange-500">
+                Welcome Back
+              </p>
+
+              <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+                Sign in to your account
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                Enter your details to access your StudioSpace account.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div>
                 <label
-                  htmlFor="booking-date"
+                  htmlFor="email"
                   className="mb-2 block text-sm font-semibold"
                 >
-                  Booking Date
+                  Email Address
                 </label>
 
                 <input
-                  id="booking-date"
-                  type="date"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setMessage("");
+                  }}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  disabled={busy}
                   required
-                  min={today || undefined}
-                  value={date}
-                  disabled={isSubmitting}
-                  onChange={(event) =>
-                    setDate(event.target.value)
-                  }
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-orange-500 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className={inputClass}
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-2">
                   <label
-                    htmlFor="booking-start"
-                    className="mb-2 block text-sm font-semibold"
+                    htmlFor="password"
+                    className="text-sm font-semibold"
                   >
-                    Start Time
+                    Password
                   </label>
 
-                  <input
-                    id="booking-start"
-                    type="time"
-                    required
-                    value={startTime}
-                    disabled={isSubmitting}
-                    onChange={(event) =>
-                      setStartTime(event.target.value)
-                    }
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-orange-500 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="booking-end"
-                    className="mb-2 block text-sm font-semibold"
+                  <span
+                    className="text-xs font-medium text-gray-400 dark:text-gray-500"
+                    title="Password recovery is not configured."
                   >
-                    End Time
-                  </label>
+                    Forgot Password?
+                  </span>
+                </div>
 
+                <div className="relative">
                   <input
-                    id="booking-end"
-                    type="time"
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      setMessage("");
+                    }}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    disabled={busy}
                     required
-                    value={endTime}
-                    disabled={isSubmitting}
-                    onChange={(event) =>
-                      setEndTime(event.target.value)
-                    }
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-orange-500 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    className={`${inputClass} pr-20`}
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((previous) => !previous)}
+                    disabled={busy}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500 transition hover:text-orange-500 dark:text-gray-400"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-orange-100 bg-orange-50 p-4 dark:border-orange-500/20 dark:bg-orange-500/10">
-                <h3 className="text-sm font-bold">
-                  Booking Summary
-                </h3>
+              <div className="flex items-center gap-2">
+                <input
+                  id="remember"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(event) => setRememberMe(event.target.checked)}
+                  disabled={busy}
+                  className="h-4 w-4 accent-orange-500"
+                />
 
-                <div className="mt-4 space-y-3 text-sm">
-                  <div className="flex justify-between gap-3">
-                    <span className="text-slate-600 dark:text-slate-300">
-                      Hourly Rate
-                    </span>
+                <label
+                  htmlFor="remember"
+                  className="text-sm text-gray-600 dark:text-gray-300"
+                >
+                  Remember me
+                </label>
+              </div>
 
-                    <span className="font-semibold">
-                      ৳{hourlyRate.toLocaleString("en-BD")}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between gap-3">
-                    <span className="text-slate-600 dark:text-slate-300">
-                      Total Hours
-                    </span>
-
-                    <span className="font-semibold">
-                      {totalHours.toLocaleString("en-BD", {
-                        maximumFractionDigits: 2,
-                      })}{" "}
-                      hours
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between gap-3">
-                    <span className="text-slate-600 dark:text-slate-300">
-                      Studio Rental
-                    </span>
-
-                    <span className="font-semibold">
-                      ৳{rentalPrice.toLocaleString("en-BD")}
-                    </span>
-                  </div>
-
-                  {typeof securityDeposit === "number" && (
-                    <div className="flex justify-between gap-3">
-                      <span className="text-slate-600 dark:text-slate-300">
-                        Security Deposit
-                      </span>
-
-                      <span className="font-semibold">
-                        ৳{deposit.toLocaleString("en-BD")}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="border-t border-orange-200 pt-3 dark:border-orange-500/20">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="font-bold">
-                        Estimated Total
-                      </span>
-
-                      <span className="text-xl font-bold text-orange-600">
-                        ৳{estimatedTotal.toLocaleString("en-BD")}
-                      </span>
-                    </div>
-                  </div>
+              {message && (
+                <div
+                  role="alert"
+                  className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"
+                >
+                  {message}
                 </div>
-              </div>
+              )}
 
-              <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
-                Your booking will be submitted for host
-                approval. No online payment is processed here.
-              </p>
-
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  disabled={isSubmitting}
-                  className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold transition hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:hover:bg-slate-800 sm:flex-1"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={
-                    isSubmitting ||
-                    totalHours <= 0 ||
-                    !date
-                  }
-                  className="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1"
-                >
-                  {isSubmitting
-                    ? "Booking..."
-                    : "Confirm Booking"}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={busy}
+                aria-busy={isLoading}
+                className="flex w-full items-center justify-center gap-3 rounded-xl bg-orange-500 py-3.5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isLoading ? (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    />
+                    Signing In...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
+              </button>
             </form>
+
+            <div className="my-6 flex items-center gap-3">
+              <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+              <span className="text-xs text-gray-400">
+                OR CONTINUE WITH
+              </span>
+              <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+            </div>
+
+            {/* Google Sign-In */}
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={busy}
+              className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:border-orange-400 hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-orange-500 dark:hover:bg-gray-700"
+            >
+              {isGoogleLoading ? (
+                <span className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-orange-500" />
+              ) : (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 48 48"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill="#EA4335"
+                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                  />
+                  <path
+                    fill="#4285F4"
+                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.25 5.48-4.75 7.18l7.73 6C44.43 38.03 46.98 31.89 46.98 24.55z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M10.53 28.59A14.41 14.41 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.2A23.91 23.91 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.97-6.19z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M24 48c6.48 0 11.92-2.13 15.89-5.8l-7.73-6c-2.14 1.44-4.89 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                  />
+                </svg>
+              )}
+
+              {isGoogleLoading ? "Connecting to Google..." : "Continue with Google"}
+            </button>
+
+            <p className="mt-7 text-center text-sm text-gray-500 dark:text-gray-400">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/register"
+                className="font-bold text-orange-500 hover:underline"
+              >
+                Create Account
+              </Link>
+            </p>
+
+            <div className="mt-7 border-t border-gray-100 pt-5 text-center dark:border-gray-800">
+              <p className="text-xs leading-5 text-gray-400 dark:text-gray-500">
+                By signing in, you agree to our Terms of Service
+                and Privacy Policy.
+              </p>
+            </div>
           </div>
         </div>
-      )}
-    </>
+      </div>
+    </main>
   );
 }
