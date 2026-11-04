@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -51,15 +50,12 @@ export default function Navbar() {
     setAuthLoading(true);
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/auth/get-session`,
-        {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-          signal,
-        }
-      );
+      const response = await fetch(`${API_URL}/api/auth/get-session`, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        signal,
+      });
 
       if (!response.ok) {
         throw new Error(`Session request failed: ${response.status}`);
@@ -70,11 +66,9 @@ export default function Navbar() {
       if (!signal?.aborted) {
         setUser(data?.user ?? null);
       }
-    } catch (error) {
+    } catch {
       if (signal?.aborted) return;
 
-      // Do not clear a known session on temporary network failures.
-      // The connection can be checked again on navigation or focus.
       if (process.env.NODE_ENV === "development") {
         console.warn(
           "Session check unavailable. Verify backend and CORS settings."
@@ -113,7 +107,9 @@ export default function Navbar() {
     setTheme(isDark ? "light" : "dark");
   };
 
-  const closeMenu = () => setMenuOpen(false);
+  const closeMenu = () => {
+    setMenuOpen(false);
+  };
 
   const isActive = (href: string) =>
     href === "/"
@@ -153,8 +149,7 @@ export default function Navbar() {
     }
   };
 
-  const avatarInitial =
-    user?.name?.trim().charAt(0).toUpperCase() || "U";
+  const avatarInitial = user?.name?.trim().charAt(0).toUpperCase() || "U";
 
   const renderAvatar = (size: string) =>
     user?.image ? (
@@ -175,7 +170,6 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 text-slate-900 backdrop-blur-xl transition-colors dark:border-slate-800 dark:bg-slate-950/95 dark:text-white">
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-12 xl:px-16">
-        {/* Logo */}
         <Link
           href="/"
           onClick={closeMenu}
@@ -191,7 +185,6 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop Navigation */}
         <nav className="hidden items-center gap-7 lg:flex xl:gap-10">
           {navLinks.map((link) => (
             <Link
@@ -209,15 +202,12 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Desktop Actions */}
         <div className="hidden items-center gap-4 lg:flex">
           <button
             type="button"
             onClick={toggleTheme}
             disabled={!mounted}
-            aria-label={
-              isDark ? "Switch to light mode" : "Switch to dark mode"
-            }
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             title={isDark ? "Light mode" : "Dark mode"}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-lg text-slate-700 transition hover:border-orange-300 hover:bg-orange-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           >
@@ -230,11 +220,22 @@ export default function Navbar() {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 {renderAvatar("h-9 w-9")}
-
                 <span className="max-w-28 truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
                   {user.name}
                 </span>
               </div>
+
+              <Link
+                href="/my-bookings"
+                aria-current={isActive("/my-bookings") ? "page" : undefined}
+                className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
+                  isActive("/my-bookings")
+                    ? "border-orange-500 bg-orange-500 text-white"
+                    : "border-orange-200 text-orange-600 hover:bg-orange-50 dark:border-orange-500/30 dark:text-orange-400 dark:hover:bg-orange-500/10"
+                }`}
+              >
+                My Bookings
+              </Link>
 
               <button
                 type="button"
@@ -264,15 +265,12 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Actions */}
         <div className="flex items-center gap-2 lg:hidden">
           <button
             type="button"
             onClick={toggleTheme}
             disabled={!mounted}
-            aria-label={
-              isDark ? "Switch to light mode" : "Switch to dark mode"
-            }
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-lg transition hover:bg-orange-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
           >
             {mounted ? (isDark ? "☀️" : "🌙") : "🌙"}
@@ -280,7 +278,7 @@ export default function Navbar() {
 
           <button
             type="button"
-            onClick={() => setMenuOpen((prev) => !prev)}
+            onClick={() => setMenuOpen((previous) => !previous)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             aria-controls="mobile-navigation"
@@ -291,7 +289,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       {menuOpen && (
         <div
           id="mobile-navigation"
@@ -333,11 +330,24 @@ export default function Navbar() {
                   </div>
                 </div>
 
+                <Link
+                  href="/my-bookings"
+                  onClick={closeMenu}
+                  aria-current={isActive("/my-bookings") ? "page" : undefined}
+                  className={`rounded-xl px-5 py-3 text-center text-sm font-bold transition ${
+                    isActive("/my-bookings")
+                      ? "bg-orange-600 text-white"
+                      : "bg-orange-500 text-white hover:bg-orange-600"
+                  }`}
+                >
+                  My Bookings
+                </Link>
+
                 <button
                   type="button"
                   onClick={handleSignOut}
                   disabled={signingOut}
-                  className="rounded-xl bg-orange-500 px-5 py-3 text-center text-sm font-bold text-white transition hover:bg-orange-600 disabled:opacity-60"
+                  className="rounded-xl border border-orange-200 px-5 py-3 text-center text-sm font-semibold text-orange-600 transition hover:bg-orange-50 disabled:opacity-60 dark:border-orange-500/30 dark:text-orange-400 dark:hover:bg-orange-500/10"
                 >
                   {signingOut ? "Signing Out..." : "Sign Out"}
                 </button>
