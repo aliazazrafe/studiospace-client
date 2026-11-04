@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -154,6 +153,57 @@ export default function RegisterPage() {
       setMessage(errorMessage);
       toast.error(errorMessage);
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/auth/sign-in/social`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            provider: "google",
+            callbackURL: window.location.origin + "/",
+            errorCallbackURL: window.location.origin + "/register",
+          }),
+        }
+      );
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.url) {
+        throw new Error(data?.message || "Google Sign-In failed.");
+      }
+
+      const redirectURL = new URL(data.url);
+
+      if (
+        redirectURL.protocol !== "https:" ||
+        redirectURL.hostname !== "accounts.google.com"
+      ) {
+        throw new Error("Unexpected Google redirect URL.");
+      }
+
+      window.location.assign(redirectURL.toString());
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Google Sign-In failed.";
+
+      setMessage(errorMessage);
+      toast.error(errorMessage);
       setIsLoading(false);
     }
   };
@@ -464,12 +514,12 @@ export default function RegisterPage() {
               <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
             </div>
 
-            {/* Google - Not Configured */}
+            {/* Google Sign-In */}
             <button
               type="button"
-              disabled
-              title="Google Sign-In is not configured yet."
-              className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white py-2.5 text-xs font-semibold text-gray-500 opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white py-2.5 text-xs font-semibold text-gray-700 transition hover:border-orange-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -493,7 +543,7 @@ export default function RegisterPage() {
                   d="M12 6.37c1.42 0 2.69.49 3.69 1.46l2.77-2.77A9.08 9.08 0 0 0 12 2.5a9.5 9.5 0 0 0-8.67 5.36l3.23 2.52c.77-2.3 2.91-4.01 5.44-4.01Z"
                 />
               </svg>
-              Google Sign-In (Coming Soon)
+              Continue with Google
             </button>
 
             {/* Login Link */}
